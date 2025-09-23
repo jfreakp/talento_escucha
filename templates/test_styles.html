@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-lg rounded-lg p-8">
+        <h1 class="text-4xl font-bold text-gray-900 mb-8">Prueba de Estilos Tailwind CSS</h1>
+        
+        <!-- Botones de prueba -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Botones</h2>
+            <div class="space-x-4 space-y-2">
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Botón Azul
+                </button>
+                <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                    Botón Verde
+                </button>
+                <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                    Botón Rojo
+                </button>
+                <button class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
+                    Botón Amarillo
+                </button>
+            </div>
+        </div>
+
+        <!-- Tarjetas de prueba -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Tarjetas</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white border border-gray-200 rounded-lg shadow-md p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Tarjeta 1</h3>
+                    <p class="text-gray-600">Esta es una tarjeta de prueba con bordes y sombra.</p>
+                    <button class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        Ver más
+                    </button>
+                </div>
+                <div class="bg-gradient-to-r from-purple-400 to-pink-400 rounded-lg shadow-md p-6 text-white">
+                    <h3 class="text-xl font-semibold mb-2">Tarjeta 2</h3>
+                    <p>Tarjeta con gradiente de colores.</p>
+                    <button class="mt-4 bg-white text-purple-600 px-4 py-2 rounded hover:bg-gray-100">
+                        Ver más
+                    </button>
+                </div>
+                <div class="bg-gray-800 rounded-lg shadow-md p-6 text-white">
+                    <h3 class="text-xl font-semibold mb-2">Tarjeta 3</h3>
+                    <p>Tarjeta con fondo oscuro.</p>
+                    <button class="mt-4 bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-500">
+                        Ver más
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Elementos de formulario -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Formularios</h2>
+            <form class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tu nombre">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="tu@email.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mensaje</label>
+                    <textarea class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Tu mensaje..."></textarea>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    Enviar
+                </button>
+            </form>
+        </div>
+
+        <!-- Alertas -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Alertas</h2>
+            <div class="space-y-4">
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                    <strong>¡Éxito!</strong> Esta es una alerta de éxito.
+                </div>
+                <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+                    <strong>¡Advertencia!</strong> Esta es una alerta de advertencia.
+                </div>
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    <strong>¡Error!</strong> Esta es una alerta de error.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
