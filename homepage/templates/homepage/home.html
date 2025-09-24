@@ -4,45 +4,45 @@
 
 {% block content %}
 <!-- Hero Section -->
-<div class="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 text-white">
+<div class="text-white rounded-t-3xl" style="background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #374151 100%);">
     <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
         <div class="text-center">
             <h1 class="text-4xl md:text-6xl font-bold mb-6">
-                Bienvenido a <span class="text-yellow-300">Talento Escucha</span>
+                Bienvenido a <span class="text-blue-400">Talento Escucha</span>
             </h1>
-            <p class="text-xl md:text-2xl mb-8 text-blue-100">
-                Descubre tu potencial y desarrolla tus habilidades con nosotros
+            <p class="text-xl md:text-2xl mb-8 text-gray-300">
+                Para continuar elige la manera en la
             </p>
-            <p class="text-lg text-blue-200 mb-12 max-w-3xl mx-auto">
-                Conectamos talento con oportunidades a través de una plataforma innovadora que te ayuda a crecer profesional y personalmente.
+            <p class="text-xl md:text-2xl mb-8 text-gray-300">
+                que deseas registrar tu petición, queja, reclamo o sugerencia
             </p>
         </div>
     </div>
 </div>
 
 <!-- Botones de navegación principales -->
-<div class="bg-white py-16">
+<div class="py-16" style="background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
-            <h2 class="text-3xl font-bold text-gray-900 mb-4">¿Qué te interesa explorar?</h2>
-            <p class="text-lg text-gray-600">Elige una de las siguientes opciones para comenzar tu experiencia</p>
+            <h2 class="text-3xl font-bold mb-4" style="color: #111827;">¿Qué te interesa explorar?</h2>
+            <p class="text-lg" style="color: #4b5563;">Elige una de las siguientes opciones para comenzar tu experiencia</p>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <!-- Botón 1: Solicitud Usuario -->
-            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100">
-                <div class="p-8 text-center">
-                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border hover:-translate-y-1 flex flex-col h-full" style="border-color: #e5e7eb;">
+                <div class="p-8 text-center flex-grow flex flex-col">
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Solicitud Usuario</h3>
-                    <p class="text-gray-600 mb-6">
-                        Si ya tienes una cuenta, puedes hacer solicitudes directamente desde tu perfil de usuario.
+                    <h3 class="text-2xl font-bold mb-4" style="color: #111827;">Solicitud Usuario</h3>
+                    <p class="mb-6 flex-grow" style="color: #6b7280;">
+                        La solicitud requerirá datos personales y será notificada por correo electrónico.
                     </p>
                     <a href="{% url 'homepage:solicitud_usuario' %}" 
-                       class="inline-flex items-center justify-center w-full px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200">
+                       class="inline-flex items-center justify-center w-full px-6 py-3 border border-transparent text-base font-medium rounded-md text-white transition-all duration-200 transform hover:scale-105 hover:shadow-lg mt-auto" style="background: linear-gradient(135deg, #111827 0%, #374151 100%);">
                         <span>Solicitar como Usuario</span>
                         <svg class="ml-2 -mr-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -52,19 +52,19 @@
             </div>
 
             <!-- Botón 2: Solicitud Anónimo -->
-            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100">
-                <div class="p-8 text-center">
-                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border hover:-translate-y-1 flex flex-col h-full" style="border-color: #e5e7eb;">
+                <div class="p-8 text-center flex-grow flex flex-col">
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Solicitud Anónimo</h3>
-                    <p class="text-gray-600 mb-6">
-                        ¿No tienes cuenta? No hay problema. Puedes hacer una solicitud anónima sin necesidad de registrarte.
+                    <h3 class="text-2xl font-bold mb-4" style="color: #111827;">Solicitud Anónimo</h3>
+                    <p class="mb-6 flex-grow" style="color: #6b7280;">
+                        La solicitud será anónima, no contendrá datos personales y no permitirá identificar a quien la ingresó.
                     </p>
                     <a href="{% url 'homepage:solicitud_anonimo' %}" 
-                       class="inline-flex items-center justify-center w-full px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors duration-200">
+                       class="inline-flex items-center justify-center w-full px-6 py-3 border border-transparent text-base font-medium rounded-md text-white transition-all duration-200 transform hover:scale-105 hover:shadow-lg mt-auto" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
                         <span>Solicitar Anónimamente</span>
                         <svg class="ml-2 -mr-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -74,19 +74,19 @@
             </div>
 
             <!-- Botón 3: Buscar Ticket -->
-            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100">
-                <div class="p-8 text-center">
-                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border hover:-translate-y-1 flex flex-col h-full" style="border-color: #e5e7eb;">
+                <div class="p-8 text-center flex-grow flex flex-col">
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Buscar Ticket</h3>
-                    <p class="text-gray-600 mb-6">
+                    <h3 class="text-2xl font-bold mb-4" style="color: #111827;">Buscar Ticket</h3>
+                    <p class="mb-6 flex-grow" style="color: #6b7280;">
                         ¿Ya tienes un ticket? Busca el estado de tu solicitud usando tu número de ticket.
                     </p>
                     <a href="{% url 'homepage:buscar_ticket' %}" 
-                       class="inline-flex items-center justify-center w-full px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 transition-colors duration-200">
+                       class="inline-flex items-center justify-center w-full px-6 py-3 border border-transparent text-base font-medium rounded-md text-white transition-all duration-200 transform hover:scale-105 hover:shadow-lg mt-auto" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
                         <span>Buscar Ticket</span>
                         <svg class="ml-2 -mr-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />

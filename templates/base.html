@@ -8,37 +8,37 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{% static 'css/output.css' %}">
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="min-h-screen" style="background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);">
     <!-- Navbar -->
-    <nav class="bg-blue-600 text-white shadow-lg">
+    <nav class="text-white shadow-lg" style="background: linear-gradient(135deg, #111827 0%, #1f2937 100%);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <h1 class="text-xl font-bold">Talento Escucha</h1>
+                    <h1 class="text-xl font-bold text-blue-400">Talento Escucha</h1>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <a href="{% url 'homepage:home' %}" class="hover:bg-blue-700 px-3 py-2 rounded-md">Inicio</a>
+                    <a href="{% url 'homepage:home' %}" class="hover:bg-gray-700 px-3 py-2 rounded-md transition-colors duration-200">Inicio</a>
                     
                     <!-- Dropdown para Solicitudes -->
                     <div class="relative group">
-                        <button class="hover:bg-blue-700 px-3 py-2 rounded-md flex items-center">
+                        <button class="hover:bg-gray-700 px-3 py-2 rounded-md flex items-center transition-colors duration-200">
                             Solicitudes
                             <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
-                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                            <a href="{% url 'homepage:solicitud_usuario' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Solicitud Usuario</a>
-                            <a href="{% url 'homepage:solicitud_anonimo' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Solicitud Anónimo</a>
-                            <a href="{% url 'homepage:buscar_ticket' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Buscar Ticket</a>
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 border" style="border-color: #e5e7eb;">
+                            <a href="{% url 'homepage:solicitud_usuario' %}" class="block px-4 py-2 text-sm hover:bg-gray-50 transition-colors duration-150" style="color: #111827;">Solicitud Usuario</a>
+                            <a href="{% url 'homepage:solicitud_anonimo' %}" class="block px-4 py-2 text-sm hover:bg-gray-50 transition-colors duration-150" style="color: #111827;">Solicitud Anónimo</a>
+                            <a href="{% url 'homepage:buscar_ticket' %}" class="block px-4 py-2 text-sm hover:bg-gray-50 transition-colors duration-150" style="color: #111827;">Buscar Ticket</a>
                         </div>
                     </div>
                     
                     {% if user.is_authenticated %}
-                        <span class="text-blue-200">¡Hola, {{ user.get_full_name|default:user.username }}!</span>
-                        <a href="{% url 'auth_app:logout' %}" class="bg-blue-500 hover:bg-blue-400 px-3 py-2 rounded-md">Cerrar Sesión</a>
+                        <span class="text-gray-300">¡Hola, {{ user.get_full_name|default:user.username }}!</span>
+                        <a href="{% url 'auth_app:logout' %}" class="px-3 py-2 rounded-md transition-all duration-200 hover:scale-105" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">Cerrar Sesión</a>
                     {% else %}
-                        <a href="{% url 'auth_app:login' %}" class="bg-blue-500 hover:bg-blue-400 px-3 py-2 rounded-md">Iniciar Sesión</a>
+                        <a href="{% url 'auth_app:login' %}" class="px-3 py-2 rounded-md transition-all duration-200 hover:scale-105" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">Iniciar Sesión</a>
                     {% endif %}
                 </div>
             </div>
@@ -117,9 +117,9 @@
         {% endblock %}
     </main>
     <!-- Footer -->
-    <footer class="bg-gray-800 text-white mt-12">
+    <footer class="text-white mt-12" style="background: linear-gradient(135deg, #111827 0%, #1f2937 100%);">
         <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-            <p class="text-center text-gray-400">© 2025 Talento Escucha. Todos los derechos reservados.</p>
+            <p class="text-center text-gray-400">© 2025 <span class="text-blue-400 font-semibold">Talento Escucha</span>. Todos los derechos reservados.</p>
         </div>
     </footer>
 </body>

@@ -36,7 +36,7 @@ class TicketForm(forms.ModelForm):
             }),
             'telefono': forms.TextInput(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-                'placeholder': '+1 (555) 123-4567'
+                'placeholder': '0985297123'
             }),
             'agencia': forms.Select(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
@@ -124,26 +124,12 @@ class TicketForm(forms.ModelForm):
 
 class TicketAnonimForm(forms.ModelForm):
     """
-    Formulario para usuarios anónimos (sin login)
+    Formulario para usuarios anónimos (sin login) - Solo campos básicos
     """
-    
-    # Campo adicional para confirmación de email
-    confirmar_correo = forms.EmailField(
-        label='Confirmar Correo *',
-        help_text='Confirma tu correo electrónico',
-        widget=forms.EmailInput(attrs={
-            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-            'placeholder': 'Confirma tu email'
-        })
-    )
     
     class Meta:
         model = Ticket
         fields = [
-            'nombre',
-            'apellido', 
-            'correo',
-            'telefono',
             'agencia',
             'tipo_solicitud',
             'severidad',
@@ -151,22 +137,6 @@ class TicketAnonimForm(forms.ModelForm):
         ]
         
         widgets = {
-            'nombre': forms.TextInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-                'placeholder': 'Ingresa tu nombre'
-            }),
-            'apellido': forms.TextInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-                'placeholder': 'Ingresa tu apellido'
-            }),
-            'correo': forms.EmailInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-                'placeholder': 'tu@email.com'
-            }),
-            'telefono': forms.TextInput(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-                'placeholder': '+1 (555) 123-4567'
-            }),
             'agencia': forms.Select(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
             }),
@@ -184,31 +154,28 @@ class TicketAnonimForm(forms.ModelForm):
         }
         
         labels = {
-            'nombre': 'Nombre *',
-            'apellido': 'Apellido *',
-            'correo': 'Correo Electrónico *',
-            'telefono': 'Teléfono *',
             'agencia': 'Agencia *',
             'tipo_solicitud': 'Tipo de Solicitud *',
             'severidad': 'Severidad *',
             'descripcion': 'Descripción de la Solicitud *'
         }
-    
-    def clean(self):
-        """Validación personalizada para confirmar correo"""
-        cleaned_data = super().clean()
-        correo = cleaned_data.get('correo')
-        confirmar_correo = cleaned_data.get('confirmar_correo')
         
-        if correo and confirmar_correo:
-            if correo.lower() != confirmar_correo.lower():
-                raise forms.ValidationError('Los correos electrónicos no coinciden.')
-        
-        return cleaned_data
+        help_texts = {
+            'agencia': 'Selecciona la agencia relacionada',
+            'tipo_solicitud': 'Selecciona el tipo de servicio que necesitas',
+            'severidad': 'Selecciona qué tan urgente es tu solicitud',
+            'descripcion': 'Explica en detalle qué necesitas'
+        }
     
     def save(self, commit=True):
         """Override del save para usuarios anónimos"""
         ticket = super().save(commit=False)
+        
+        # Para solicitudes anónimas, establecer valores por defecto
+        ticket.nombre = 'Anónimo'
+        ticket.apellido = 'Anónimo'
+        ticket.correo = 'anonimo@example.com'
+        ticket.telefono = 'N/A'
         
         # Estado inicial para usuarios anónimos
         ticket.estado = 'pendiente'

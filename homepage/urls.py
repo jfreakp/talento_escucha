@@ -10,5 +10,6 @@ urlpatterns = [
     path('solicitud-usuario/', views.solicitud_usuario, name='solicitud_usuario'),
     path('solicitud-anonimo/', views.solicitud_anonimo, name='solicitud_anonimo'),
     path('buscar-ticket/', views.buscar_ticket, name='buscar_ticket'),
+    path('descargar-pdf/<int:ticket_id>/', views.descargar_pdf_ticket, name='descargar_pdf_ticket'),
     path('test-styles/', views.test_styles, name='test_styles'),
 ]
