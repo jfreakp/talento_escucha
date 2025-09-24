@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+
+{% block title %}Solicitud Usuario - {{ block.super }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+    <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Crear Solicitud</h1>
+            <p class="text-xl text-blue-100">Crea tu solicitud sin necesidad de registro</p>
+        </div>
+    </div>
+</div>
+
+<!-- Contenido Principal -->
+<div class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-3xl mx-auto">
+            {% if user.is_authenticated %}
+                <!-- Usuario autenticado -->
+                <div class="bg-blue-50 rounded-lg p-6 mb-8">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-blue-900">¡Hola, {{ user.get_full_name|default:user.username }}!</h3>
+                            <p class="text-blue-700">Estás autenticado. Algunos campos se completarán automáticamente.</p>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Usuario anónimo -->
+                <div class="bg-green-50 rounded-lg p-6 mb-8">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-green-900">Solicitud Abierta</h3>
+                            <p class="text-green-700">Puedes crear una solicitud sin necesidad de registrarte.</p>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+                <!-- Formulario de solicitud -->
+                <div class="bg-white border border-gray-200 rounded-lg p-8">
+                    <div class="text-center mb-8">
+                        <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-2">Crear Nueva Solicitud</h2>
+                        <p class="text-gray-600">Completa el formulario para crear tu ticket de solicitud.</p>
+                    </div>
+
+                    <!-- Mostrar mensajes -->
+                    {% if messages %}
+                        <div class="mb-6">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} {% if message.tags == 'success' %}bg-green-50 border border-green-200 text-green-800{% elif message.tags == 'error' %}bg-red-50 border border-red-200 text-red-800{% else %}bg-blue-50 border border-blue-200 text-blue-800{% endif %} px-4 py-3 rounded-lg">
+                                    <div class="flex">
+                                        <div class="flex-shrink-0">
+                                            {% if message.tags == 'success' %}
+                                                <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                                </svg>
+                                            {% elif message.tags == 'error' %}
+                                                <svg class="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                                </svg>
+                                            {% endif %}
+                                        </div>
+                                        <div class="ml-3">
+                                            {{ message }}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Formulario -->
+                    <form method="post" class="space-y-6">
+                        {% csrf_token %}
+                        
+                        <!-- Información Personal -->
+                        <div class="bg-gray-50 p-6 rounded-lg">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Información Personal</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="{{ form.nombre.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        {{ form.nombre.label }}
+                                    </label>
+                                    {{ form.nombre }}
+                                    {% if form.nombre.errors %}
+                                        <div class="mt-2 text-sm text-red-600">
+                                            {% for error in form.nombre.errors %}
+                                                <p>{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    {% if form.nombre.help_text %}
+                                        <p class="mt-1 text-xs text-gray-500">{{ form.nombre.help_text }}</p>
+                                    {% endif %}
+                                </div>
+                                
+                                <div>
+                                    <label for="{{ form.apellido.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        {{ form.apellido.label }}
+                                    </label>
+                                    {{ form.apellido }}
+                                    {% if form.apellido.errors %}
+                                        <div class="mt-2 text-sm text-red-600">
+                                            {% for error in form.apellido.errors %}
+                                                <p>{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    {% if form.apellido.help_text %}
+                                        <p class="mt-1 text-xs text-gray-500">{{ form.apellido.help_text }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información de Contacto -->
+                        <div class="bg-gray-50 p-6 rounded-lg">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Información de Contacto</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="{{ form.correo.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        {{ form.correo.label }}
+                                    </label>
+                                    {{ form.correo }}
+                                    {% if form.correo.errors %}
+                                        <div class="mt-2 text-sm text-red-600">
+                                            {% for error in form.correo.errors %}
+                                                <p>{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    {% if form.correo.help_text %}
+                                        <p class="mt-1 text-xs text-gray-500">{{ form.correo.help_text }}</p>
+                                    {% endif %}
+                                </div>
+                                
+                                <div>
+                                    <label for="{{ form.telefono.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        {{ form.telefono.label }}
+                                    </label>
+                                    {{ form.telefono }}
+                                    {% if form.telefono.errors %}
+                                        <div class="mt-2 text-sm text-red-600">
+                                            {% for error in form.telefono.errors %}
+                                                <p>{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    {% if form.telefono.help_text %}
+                                        <p class="mt-1 text-xs text-gray-500">{{ form.telefono.help_text }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información de la Solicitud -->
+                        <div class="bg-gray-50 p-6 rounded-lg">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Detalles de la Solicitud</h3>
+                            <div class="space-y-6">
+                                <div>
+                                    <label for="{{ form.agencia.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        {{ form.agencia.label }}
+                                    </label>
+                                    {{ form.agencia }}
+                                    {% if form.agencia.errors %}
+                                        <div class="mt-2 text-sm text-red-600">
+                                            {% for error in form.agencia.errors %}
+                                                <p>{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    {% if form.agencia.help_text %}
+                                        <p class="mt-1 text-xs text-gray-500">{{ form.agencia.help_text }}</p>
+                                    {% endif %}
+                                </div>
+                                
+                                <div>
+                                    <label for="{{ form.tipo_solicitud.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        {{ form.tipo_solicitud.label }}
+                                    </label>
+                                    {{ form.tipo_solicitud }}
+                                    {% if form.tipo_solicitud.errors %}
+                                        <div class="mt-2 text-sm text-red-600">
+                                            {% for error in form.tipo_solicitud.errors %}
+                                                <p>{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    {% if form.tipo_solicitud.help_text %}
+                                        <p class="mt-1 text-xs text-gray-500">{{ form.tipo_solicitud.help_text }}</p>
+                                    {% endif %}
+                                </div>
+                                
+                                <div>
+                                    <label for="{{ form.severidad.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        {{ form.severidad.label }}
+                                    </label>
+                                    {{ form.severidad }}
+                                    {% if form.severidad.errors %}
+                                        <div class="mt-2 text-sm text-red-600">
+                                            {% for error in form.severidad.errors %}
+                                                <p>{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    {% if form.severidad.help_text %}
+                                        <p class="mt-1 text-xs text-gray-500">{{ form.severidad.help_text }}</p>
+                                    {% endif %}
+                                </div>
+                                
+                                <div>
+                                    <label for="{{ form.descripcion.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                        {{ form.descripcion.label }}
+                                    </label>
+                                    {{ form.descripcion }}
+                                    {% if form.descripcion.errors %}
+                                        <div class="mt-2 text-sm text-red-600">
+                                            {% for error in form.descripcion.errors %}
+                                                <p>{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    {% if form.descripcion.help_text %}
+                                        <p class="mt-1 text-xs text-gray-500">{{ form.descripcion.help_text }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="flex justify-end space-x-4 pt-6">
+                            <button type="button" 
+                                    onclick="history.back()" 
+                                    class="px-6 py-3 border border-gray-300 text-gray-700 bg-white rounded-md hover:bg-gray-50 transition-colors duration-200">
+                                Cancelar
+                            </button>
+                            <button type="submit" 
+                                    class="px-8 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                                </svg>
+                                Enviar Solicitud
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Información adicional -->
+                    <div class="{% if user.is_authenticated %}bg-blue-50{% else %}bg-green-50{% endif %} rounded-lg p-6 mt-8">
+                        {% if user.is_authenticated %}
+                            <h3 class="text-lg font-semibold text-blue-900 mb-3">Ventajas de hacer solicitudes como usuario registrado:</h3>
+                            <ul class="text-blue-700 space-y-2">
+                                <li>• Seguimiento automático de tus solicitudes</li>
+                                <li>• Historial completo de todas tus peticiones</li>
+                                <li>• Notificaciones por email sobre el estado</li>
+                                <li>• Perfil personalizado con tu información</li>
+                                <li>• Prioridad en la atención al cliente</li>
+                            </ul>
+                        {% else %}
+                            <h3 class="text-lg font-semibold text-green-900 mb-3">Solicitud sin registro:</h3>
+                            <ul class="text-green-700 space-y-2">
+                                <li>• No necesitas crear una cuenta</li>
+                                <li>• Proceso rápido y sencillo</li>
+                                <li>• Te contactaremos por email</li>
+                                <li>• Puedes buscar tu ticket más tarde</li>
+                            </ul>
+                            <div class="mt-4 pt-4 border-t border-green-200">
+                                <p class="text-sm text-green-600">
+                                    💡 <strong>Consejo:</strong> Si tienes una cuenta, 
+                                    <a href="{% url 'auth_app:login' %}" class="underline hover:text-green-800">inicia sesión</a> 
+                                    para obtener beneficios adicionales.
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to action -->
+<div class="bg-gray-50 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h3 class="text-2xl font-bold text-gray-900 mb-4">¿No tienes cuenta?</h3>
+        <p class="text-gray-600 mb-6">También puedes hacer una solicitud anónima o buscar un ticket existente</p>
+        <div class="space-x-4">
+            <a href="{% url 'homepage:solicitud_anonimo' %}" 
+               class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors duration-200">
+                Solicitar Anónimamente
+            </a>
+            <a href="{% url 'homepage:buscar_ticket' %}" 
+               class="inline-flex items-center px-6 py-3 border border-purple-600 text-base font-medium rounded-md text-purple-600 bg-white hover:bg-purple-50 transition-colors duration-200">
+                Buscar Ticket
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

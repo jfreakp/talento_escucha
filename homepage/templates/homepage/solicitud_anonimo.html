@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Solicitud Anónimo - {{ block.super }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="bg-gradient-to-r from-green-600 to-green-800 text-white">
+    <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Solicitud Anónimo</h1>
+            <p class="text-xl text-green-100">Sin necesidad de crear una cuenta</p>
+        </div>
+    </div>
+</div>
+
+<!-- Contenido Principal -->
+<div class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Información sobre solicitudes anónimas -->
+            <div class="bg-green-50 rounded-lg p-6 mb-8">
+                <div class="flex items-start">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-green-900 mb-2">Solicita sin necesidad de registro</h3>
+                        <p class="text-green-700">Puedes hacer tu solicitud sin crear una cuenta. Te proporcionaremos un número de ticket para hacer seguimiento.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario de solicitud -->
+            <div class="bg-white border border-gray-200 rounded-lg p-8">
+                <div class="text-center mb-8">
+                    <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Formulario próximamente</h2>
+                    <p class="text-gray-600">Estamos desarrollando el sistema de solicitudes anónimas.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-green-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-green-900 mb-3">Ventajas de las solicitudes anónimas:</h3>
+                        <ul class="text-green-700 space-y-2">
+                            <li>• No requiere registro</li>
+                            <li>• Proceso rápido y sencillo</li>
+                            <li>• Número de ticket para seguimiento</li>
+                            <li>• Privacidad garantizada</li>
+                            <li>• Atención personalizada</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-blue-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-blue-900 mb-3">¿Qué información necesitarás?</h3>
+                        <ul class="text-blue-700 space-y-2">
+                            <li>• Email de contacto</li>
+                            <li>• Descripción de tu solicitud</li>
+                            <li>• Tipo de servicio requerido</li>
+                            <li>• Preferencia de contacto</li>
+                            <li>• Información adicional relevante</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-8 p-6 bg-gray-50 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-semibold text-gray-900">Importante</h4>
+                            <p class="text-sm text-gray-600">Guarda el número de ticket que te proporcionaremos. Lo necesitarás para hacer seguimiento de tu solicitud.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proceso de solicitud -->
+            <div class="mt-12">
+                <h3 class="text-2xl font-bold text-gray-900 text-center mb-8">Proceso de Solicitud Anónima</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl font-bold text-green-600">1</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Completar Formulario</h4>
+                        <p class="text-sm text-gray-600">Llena los datos básicos de tu solicitud</p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl font-bold text-blue-600">2</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Recibir Ticket</h4>
+                        <p class="text-sm text-gray-600">Obtienes un número de ticket único</p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl font-bold text-purple-600">3</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Procesamiento</h4>
+                        <p class="text-sm text-gray-600">Nuestro equipo revisa tu solicitud</p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl font-bold text-yellow-600">4</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Respuesta</h4>
+                        <p class="text-sm text-gray-600">Te contactamos con la información</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to action -->
+<div class="bg-gray-50 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h3 class="text-2xl font-bold text-gray-900 mb-4">¿Ya tienes un ticket?</h3>
+        <p class="text-gray-600 mb-6">Puedes buscar el estado de tu solicitud o hacer una solicitud como usuario registrado</p>
+        <div class="space-x-4">
+            <a href="{% url 'homepage:buscar_ticket' %}" 
+               class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 transition-colors duration-200">
+                Buscar Ticket
+            </a>
+            <a href="{% url 'homepage:solicitud_usuario' %}" 
+               class="inline-flex items-center px-6 py-3 border border-blue-600 text-base font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50 transition-colors duration-200">
+                Solicitud Usuario
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

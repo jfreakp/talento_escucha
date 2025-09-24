@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+
+{% block title %}Servicios - {{ block.super }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+    <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Servicios</h1>
+            <p class="text-xl text-blue-100">Próximamente tendremos un formulario aquí</p>
+        </div>
+    </div>
+</div>
+
+<!-- Contenido Principal -->
+<div class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <div class="w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-8">
+                <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Página en Construcción</h2>
+            <p class="text-lg text-gray-600 mb-8">
+                Esta página contendrá un formulario muy pronto. Estamos trabajando para ofrecerte la mejor experiencia.
+            </p>
+            <div class="bg-blue-50 rounded-lg p-6 max-w-2xl mx-auto">
+                <h3 class="text-lg font-semibold text-blue-900 mb-2">¿Qué encontrarás aquí próximamente?</h3>
+                <ul class="text-blue-700 space-y-2">
+                    <li>• Formulario de solicitud de servicios</li>
+                    <li>• Opciones personalizadas según tus necesidades</li>
+                    <li>• Sistema de seguimiento de solicitudes</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to action -->
+<div class="bg-gray-50 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h3 class="text-2xl font-bold text-gray-900 mb-4">Mientras tanto...</h3>
+        <p class="text-gray-600 mb-6">Puedes explorar otras secciones de nuestro sitio</p>
+        <div class="space-x-4">
+            <a href="{% url 'homepage:home' %}" 
+               class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200">
+                Volver al Inicio
+            </a>
+            <a href="{% url 'homepage:sobre_nosotros' %}" 
+               class="inline-flex items-center px-6 py-3 border border-blue-600 text-base font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50 transition-colors duration-200">
+                Sobre Nosotros
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<!-- Hero Section -->
+<div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+    <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Nuestros Servicios</h1>
+            <p class="text-xl text-blue-100">Soluciones profesionales para potenciar tu talento</p>
+        </div>
+    </div>
+</div>
+
+<!-- Servicios principales -->
+<div class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">¿Qué ofrecemos?</h2>
+            <p class="text-lg text-gray-600">Servicios diseñados para impulsar tu desarrollo profesional</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Servicio 1 -->
+            <div class="bg-white rounded-lg shadow-md p-8 border border-gray-200 hover:shadow-lg transition-shadow">
+                <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Coaching Profesional</h3>
+                <p class="text-gray-600 mb-6">
+                    Sesiones personalizadas de coaching para desarrollar tus habilidades de liderazgo y alcanzar tus objetivos profesionales.
+                </p>
+                <ul class="text-sm text-gray-600 mb-6 space-y-2">
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Sesiones individuales
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Plan personalizado
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Seguimiento continuo
+                    </li>
+                </ul>
+                <div class="text-2xl font-bold text-blue-600 mb-4">$150/sesión</div>
+                <button class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
+                    Solicitar Información
+                </button>
+            </div>
+
+            <!-- Servicio 2 -->
+            <div class="bg-white rounded-lg shadow-md p-8 border border-gray-200 hover:shadow-lg transition-shadow">
+                <div class="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Capacitación Empresarial</h3>
+                <p class="text-gray-600 mb-6">
+                    Programas de formación para empresas enfocados en el desarrollo del talento humano y mejora de la productividad.
+                </p>
+                <ul class="text-sm text-gray-600 mb-6 space-y-2">
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Talleres grupales
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Material incluido
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Certificación
+                    </li>
+                </ul>
+                <div class="text-2xl font-bold text-green-600 mb-4">Desde $2000</div>
+                <button class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors">
+                    Cotizar Programa
+                </button>
+            </div>
+
+            <!-- Servicio 3 -->
+            <div class="bg-white rounded-lg shadow-md p-8 border border-gray-200 hover:shadow-lg transition-shadow">
+                <div class="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Evaluación de Talento</h3>
+                <p class="text-gray-600 mb-6">
+                    Análisis completo de habilidades y competencias para identificar fortalezas y áreas de mejora profesional.
+                </p>
+                <ul class="text-sm text-gray-600 mb-6 space-y-2">
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Tests psicométricos
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Informe detallado
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Recomendaciones
+                    </li>
+                </ul>
+                <div class="text-2xl font-bold text-purple-600 mb-4">$300</div>
+                <button class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition-colors">
+                    Agendar Evaluación
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Proceso -->
+<div class="bg-gray-50 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">¿Cómo trabajamos?</h2>
+            <p class="text-lg text-gray-600">Nuestro proceso es simple y efectivo</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">1</div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Consulta inicial</h3>
+                <p class="text-gray-600">Evaluamos tus necesidades y objetivos</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">2</div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Plan personalizado</h3>
+                <p class="text-gray-600">Diseñamos un programa específico para ti</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">3</div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Implementación</h3>
+                <p class="text-gray-600">Ejecutamos el plan con seguimiento continuo</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">4</div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Resultados</h3>
+                <p class="text-gray-600">Evaluamos el progreso y celebramos logros</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to action -->
+<div class="bg-blue-600">
+    <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h2 class="text-3xl font-bold text-white mb-4">¿Listo para potenciar tu talento?</h2>
+            <p class="text-xl text-blue-100 mb-8">
+                Contáctanos hoy y comienza tu transformación profesional
+            </p>
+            <div class="space-x-4">
+                <a href="{% url 'homepage:solicitud_usuario' %}" 
+                   class="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-gray-50 transition-colors duration-200">
+                    Solicitar Servicio
+                </a>
+                <a href="{% url 'homepage:home' %}" 
+                   class="inline-flex items-center px-8 py-3 border border-white text-base font-medium rounded-md text-white hover:bg-blue-500 transition-colors duration-200">
+                    Volver al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

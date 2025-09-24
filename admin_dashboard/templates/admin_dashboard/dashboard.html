@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Talento Escucha</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <style>
+        :root { font-family: 'Inter', sans-serif; }
+        @supports (font-variation-settings: normal) {
+            :root { font-family: 'Inter var', sans-serif; }
+        }
+    </style>
+</head>
+<body>
+<div class="bg-slate-100 overflow-y-scroll w-screen h-screen antialiased text-slate-300 selection:bg-blue-600 selection:text-white">
+    <div class="flex flex-col relative w-screen">
+        <!-- Sidebar -->
+        <div id="menu" class="bg-gray-900 min-h-screen z-10 text-slate-300 w-64 fixed left-0 h-screen flex flex-col justify-between">
+           <!-- Top Section -->
+           <div class="flex flex-col">
+               <div id="logo" class="my-4 px-6">
+                <h1 class="text-lg md:text-2xl font-bold text-white">Talento<span class="text-blue-500">Escucha</span></h1>
+                <p class="text-slate-500 text-sm">Sistema PQRS - Dashboard</p>
+               </div>
+               
+               <div id="profile" class="px-6 py-10">
+                <p class="text-slate-500">Bienvenido,</p>
+                <a href="#" class="inline-flex space-x-2 items-center">
+                    <span>
+                        <div class="rounded-full w-8 h-8 bg-blue-600 flex items-center justify-center text-white font-bold">
+                            {{ user.first_name|first|default:user.username|first|upper }}
+                        </div>
+                    </span>
+                    <span class="text-sm md:text-base font-bold">
+                        {{ user.get_full_name|default:user.username }}
+                    </span>
+                </a>
+               </div>
+               
+               <div id="nav" class="w-full px-6">
+                <a href="{% url 'admin_dashboard:dashboard' %}" class="w-full px-2 inline-flex space-x-2 items-center border-b border-slate-700 py-3 bg-blue-800 hover:bg-white/5 transition ease-linear duration-150">
+                    <div>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                        </svg>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-lg font-bold leading-5 text-white">Dashboard</span>
+                        <span class="text-sm text-white/50 hidden md:block">Resumen General</span>
+                    </div>
+                </a>
+               </div>
+           </div>
+           
+           <!-- Bottom Section: Logout -->
+           <div class="p-6 border-t border-slate-700">
+            <a href="/auth/logout/" class="w-full px-2 inline-flex space-x-2 items-center py-3 hover:bg-white/5 transition ease-linear duration-150 rounded-lg">
+                <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                    </svg>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-lg text-slate-300 font-bold leading-5">Cerrar Sesión</span>
+                    <span class="text-sm text-slate-500 hidden md:block">Salir del Sistema</span>
+                </div>
+            </a>
+           </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="ml-64 flex-1 p-8">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <!-- Header -->
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Sistema PQRS Dashboard</h1>
+                    <p class="text-gray-600">{{ "now"|date:"l, d \d\e F \d\e Y - H:i" }}</p>
+                </div>
+                
+                <!-- Estadísticas Principales -->
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Atenciones -->
+                    <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-lg p-6 text-white relative overflow-hidden">
+                        <div class="relative z-10">
+                            <p class="text-red-100 text-sm font-medium uppercase">ATENCIONES</p>
+                            <p class="text-4xl font-bold mb-2">2,643</p>
+                            <div class="flex items-center text-red-100">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-sm">1.3% desde la semana pasada</span>
+                            </div>
+                        </div>
+                        <!-- Mini gráfico decorativo -->
+                        <div class="absolute bottom-0 right-0 opacity-20">
+                            <svg width="80" height="40" viewBox="0 0 80 40" fill="none">
+                                <path d="M0 30 L20 25 L40 15 L60 20 L80 10" stroke="white" stroke-width="2" fill="none"/>
+                                <path d="M0 30 L20 25 L40 15 L60 20 L80 10 L80 40 L0 40 Z" fill="white" opacity="0.1"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Visitas -->
+                    <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-lg p-6 text-white relative overflow-hidden">
+                        <div class="relative z-10">
+                            <p class="text-red-100 text-sm font-medium uppercase">VISITAS</p>
+                            <p class="text-4xl font-bold mb-2">2,643</p>
+                            <div class="flex items-center text-red-100">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-sm">1.3% desde la semana pasada</span>
+                            </div>
+                        </div>
+                        <!-- Mini gráfico decorativo -->
+                        <div class="absolute bottom-0 right-0 opacity-20">
+                            <svg width="80" height="40" viewBox="0 0 80 40" fill="none">
+                                <path d="M0 35 L20 20 L40 25 L60 15 L80 5" stroke="white" stroke-width="2" fill="none"/>
+                                <path d="M0 35 L20 20 L40 25 L60 15 L80 5 L80 40 L0 40 Z" fill="white" opacity="0.1"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Severidad -->
+                    <div class="bg-gray-100 rounded-lg p-6">
+                        <h3 class="text-gray-600 text-sm font-medium uppercase mb-4">Severidad</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700 font-medium">Alto</span>
+                                <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm font-semibold">{{ severidad_alta }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700 font-medium">Medio</span>
+                                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm font-semibold">{{ severidad_media }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700 font-medium">Bajo</span>
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm font-semibold">{{ severidad_baja }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico de Tipos (Dona) -->
+                    <div class="bg-gray-100 rounded-lg p-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-gray-600 text-sm font-medium uppercase">Tipo</h3>
+                            <span class="text-xs text-gray-500">1.32% otros géneros</span>
+                        </div>
+                        <div class="flex items-center justify-center mb-4">
+                            <!-- Gráfico de dona simple -->
+                            <div class="relative w-24 h-24">
+                                <svg class="w-24 h-24 transform -rotate-90" viewBox="0 0 36 36">
+                                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
+                                          fill="none" stroke="#e5e7eb" stroke-width="2"/>
+                                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
+                                          fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="60, 40" stroke-linecap="round"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span class="text-xs text-gray-600 font-medium">60%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                                <span class="text-gray-700">Reclamos</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-gray-300 rounded-full mr-2"></div>
+                                <span class="text-gray-700">Peticiones</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-gray-400 rounded-full mr-2"></div>
+                                <span class="text-gray-700">Quejas</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Segunda Fila de Estadísticas -->
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Porcentaje de Anonimato -->
+                    <div class="bg-gray-100 rounded-lg p-6">
+                        <h3 class="text-gray-600 text-sm font-medium uppercase mb-4">Porcentaje de Anonimato</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700 font-medium">Usuarios Registrados</span>
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-semibold">25</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700 font-medium">Anónimos</span>
+                                <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-sm font-semibold">10</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico de Barras - Tickets por Agencia -->
+                    <div class="bg-gray-100 rounded-lg p-6 lg:col-span-2">
+                        <h3 class="text-gray-600 text-sm font-medium uppercase mb-4">Tickets por Agencia</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center">
+                                <span class="w-16 text-xs text-gray-600 font-medium">ZUMA</span>
+                                <div class="flex-1 mx-3">
+                                    <div class="h-8 bg-gray-200 rounded">
+                                        <div class="h-8 bg-red-500 rounded" style="width: 45%"></div>
+                                    </div>
+                                </div>
+                                <div class="h-8 bg-gray-400 rounded" style="width: 35%"></div>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-16 text-xs text-gray-600 font-medium">GUAYTAR</span>
+                                <div class="flex-1 mx-3">
+                                    <div class="h-8 bg-gray-200 rounded">
+                                        <div class="h-8 bg-red-500 rounded" style="width: 35%"></div>
+                                    </div>
+                                </div>
+                                <div class="h-8 bg-gray-400 rounded" style="width: 25%"></div>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-16 text-xs text-gray-600 font-medium">YACUANQ</span>
+                                <div class="flex-1 mx-3">
+                                    <div class="h-8 bg-gray-200 rounded">
+                                        <div class="h-8 bg-red-500 rounded" style="width: 85%"></div>
+                                    </div>
+                                </div>
+                                <div class="h-8 bg-gray-400 rounded" style="width: 55%"></div>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-16 text-xs text-gray-600 font-medium">PALANCA</span>
+                                <div class="flex-1 mx-3">
+                                    <div class="h-8 bg-gray-200 rounded">
+                                        <div class="h-8 bg-red-500 rounded" style="width: 55%"></div>
+                                    </div>
+                                </div>
+                                <div class="h-8 bg-gray-400 rounded" style="width: 45%"></div>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-16 text-xs text-gray-600 font-medium">VALPARAISO</span>
+                                <div class="flex-1 mx-3">
+                                    <div class="h-8 bg-gray-200 rounded">
+                                        <div class="h-8 bg-red-500 rounded" style="width: 65%"></div>
+                                    </div>
+                                </div>
+                                <div class="h-8 bg-gray-400 rounded" style="width: 55%"></div>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-16 text-xs text-gray-600 font-medium">PASQUIRA</span>
+                                <div class="flex-1 mx-3">
+                                    <div class="h-8 bg-gray-200 rounded">
+                                        <div class="h-8 bg-red-500 rounded" style="width: 75%"></div>
+                                    </div>
+                                </div>
+                                <div class="h-8 bg-gray-400 rounded" style="width: 45%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Temas -->
+                    <div class="bg-gray-100 rounded-lg p-6">
+                        <h3 class="text-gray-600 text-sm font-medium uppercase mb-4">TEMAS</h3>
+                        <div class="space-y-2">
+                            <div class="bg-red-500 text-white px-3 py-2 rounded text-sm font-medium">MEJORAMIENTO DE INFRAESTRUCTURA</div>
+                            <div class="bg-red-500 text-white px-3 py-2 rounded text-sm font-medium">AGUA</div>
+                            <div class="bg-red-500 text-white px-3 py-2 rounded text-sm font-medium">DETERIORO</div>
+                            <div class="bg-red-500 text-white px-3 py-2 rounded text-sm font-medium">SOCIAL</div>
+                            <div class="bg-red-500 text-white px-3 py-2 rounded text-sm font-medium">INSEGURIDAD</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

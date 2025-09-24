@@ -18,13 +18,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('auth_app.urls')),
-    path('', views.home, name='home'),
-    path('test-styles/', views.test_styles, name='test_styles'),
+    path('dashboard/', include('admin_dashboard.urls')),
+    path('', include('homepage.urls')),
 ]
 
 # Servir archivos estáticos durante el desarrollo

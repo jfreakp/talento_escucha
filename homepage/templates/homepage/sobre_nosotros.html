@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+
+{% block title %}Sobre Nosotros - {{ block.super }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="bg-gradient-to-r from-green-600 to-blue-600 text-white">
+    <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Sobre Nosotros</h1>
+            <p class="text-xl text-green-100">Próximamente tendremos un formulario aquí</p>
+        </div>
+    </div>
+</div>
+
+<!-- Contenido Principal -->
+<div class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <div class="w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-8">
+                <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Página en Construcción</h2>
+            <p class="text-lg text-gray-600 mb-8">
+                Esta página contendrá un formulario muy pronto. Estamos trabajando para ofrecerte la mejor experiencia.
+            </p>
+            <div class="bg-green-50 rounded-lg p-6 max-w-2xl mx-auto">
+                <h3 class="text-lg font-semibold text-green-900 mb-2">¿Qué encontrarás aquí próximamente?</h3>
+                <ul class="text-green-700 space-y-2">
+                    <li>• Formulario de información corporativa</li>
+                    <li>• Historia de nuestra empresa</li>
+                    <li>• Formulario de consultas empresariales</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to action -->
+<div class="bg-gray-50 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h3 class="text-2xl font-bold text-gray-900 mb-4">Mientras tanto...</h3>
+        <p class="text-gray-600 mb-6">Puedes explorar otras secciones de nuestro sitio</p>
+        <div class="space-x-4">
+            <a href="{% url 'homepage:home' %}" 
+               class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors duration-200">
+                Volver al Inicio
+            </a>
+            <a href="{% url 'homepage:servicios' %}" 
+               class="inline-flex items-center px-6 py-3 border border-green-600 text-base font-medium rounded-md text-green-600 bg-white hover:bg-green-50 transition-colors duration-200">
+                Ver Servicios
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<!-- Hero Section -->
+<div class="bg-gradient-to-r from-green-600 to-blue-600 text-white">
+    <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Sobre Nosotros</h1>
+            <p class="text-xl text-green-100">Conoce la historia y misión detrás de Talento Escucha</p>
+        </div>
+    </div>
+</div>
+
+<!-- Misión y Visión -->
+<div class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">Nuestra Misión</h2>
+                <p class="text-lg text-gray-600 mb-6">
+                    En Talento Escucha, nos dedicamos a <strong>descubrir y potenciar el talento humano</strong> a través de metodologías innovadoras y un enfoque personalizado. Creemos que cada persona tiene un potencial único que, con el acompañamiento adecuado, puede transformar no solo su vida profesional, sino también personal.
+                </p>
+                <p class="text-lg text-gray-600 mb-6">
+                    Nuestro compromiso es <strong>escuchar activamente</strong> las necesidades, sueños y aspiraciones de nuestros clientes para diseñar experiencias de desarrollo que generen un impacto real y duradero.
+                </p>
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                    </div>
+                    <span class="text-green-600 font-semibold">Transformamos vidas a través del desarrollo del talento</span>
+                </div>
+            </div>
+            
+            <div class="bg-green-50 rounded-lg p-8">
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Nuestra Visión</h3>
+                <p class="text-gray-600 mb-4">
+                    Ser la plataforma líder en Latinoamérica para el desarrollo y descubrimiento del talento humano, reconocidos por nuestra excelencia en:
+                </p>
+                <ul class="space-y-3">
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-green-500 mt-1 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="text-gray-700">Metodologías innovadoras de evaluación</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-green-500 mt-1 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="text-gray-700">Programas de desarrollo personalizados</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-green-500 mt-1 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="text-gray-700">Impacto positivo en comunidades</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Historia -->
+<div class="bg-gray-50 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Nuestra Historia</h2>
+            <p class="text-lg text-gray-600">Un viaje de pasión por el desarrollo humano</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">2020</div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Los Inicios</h3>
+                <p class="text-gray-600">
+                    Nace Talento Escucha con la visión de revolucionar la forma en que se identifica y desarrolla el talento humano en el ámbito profesional.
+                </p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">2022</div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Expansión</h3>
+                <p class="text-gray-600">
+                    Ampliamos nuestros servicios incorporando coaching empresarial y programas de capacitación para equipos de trabajo.
+                </p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">2025</div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Innovación</h3>
+                <p class="text-gray-600">
+                    Lanzamos nuestra plataforma digital integrada para ofrecer una experiencia completa y accesible a todos nuestros usuarios.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Equipo -->
+<div class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Nuestro Equipo</h2>
+            <p class="text-lg text-gray-600">Profesionales apasionados por el desarrollo del talento</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Miembro 1 -->
+            <div class="text-center">
+                <div class="w-32 h-32 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <span class="text-white text-3xl font-bold">MG</span>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-1">María González</h3>
+                <p class="text-blue-600 mb-3">Directora General & Coach Senior</p>
+                <p class="text-gray-600 text-sm">
+                    Psicóloga organizacional con más de 15 años de experiencia en desarrollo de talento humano y liderazgo empresarial.
+                </p>
+            </div>
+            
+            <!-- Miembro 2 -->
+            <div class="text-center">
+                <div class="w-32 h-32 bg-gradient-to-r from-green-400 to-green-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <span class="text-white text-3xl font-bold">JR</span>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-1">Juan Rodríguez</h3>
+                <p class="text-green-600 mb-3">Especialista en Evaluación de Talento</p>
+                <p class="text-gray-600 text-sm">
+                    Experto en psicometría y análisis de competencias con certificaciones internacionales en evaluación de personal.
+                </p>
+            </div>
+            
+            <!-- Miembro 3 -->
+            <div class="text-center">
+                <div class="w-32 h-32 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <span class="text-white text-3xl font-bold">AS</span>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-1">Ana Silva</h3>
+                <p class="text-purple-600 mb-3">Coordinadora de Programas</p>
+                <p class="text-gray-600 text-sm">
+                    Especialista en diseño de programas formativos y gestión de proyectos de desarrollo organizacional.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Valores -->
+<div class="bg-gray-50 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Nuestros Valores</h2>
+            <p class="text-lg text-gray-600">Los principios que guían nuestro trabajo</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 12v1m1-6h4m1 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Excelencia</h3>
+                <p class="text-gray-600">Buscamos la mejora continua en todo lo que hacemos</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Colaboración</h3>
+                <p class="text-gray-600">Trabajamos en equipo para lograr mejores resultados</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Innovación</h3>
+                <p class="text-gray-600">Adoptamos nuevas tecnologías y metodologías</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Empatía</h3>
+                <p class="text-gray-600">Escuchamos y comprendemos las necesidades únicas</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to action -->
+<div class="bg-green-600">
+    <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h2 class="text-3xl font-bold text-white mb-4">¿Te identificas con nuestra misión?</h2>
+            <p class="text-xl text-green-100 mb-8">
+                Únete a nuestra comunidad y comienza a desarrollar tu potencial
+            </p>
+            <div class="space-x-4">
+                <a href="{% url 'homepage:solicitud_usuario' %}" 
+                   class="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-green-600 bg-white hover:bg-gray-50 transition-colors duration-200">
+                    Solicitar Servicio
+                </a>
+                <a href="{% url 'homepage:servicios' %}" 
+                   class="inline-flex items-center px-8 py-3 border border-white text-base font-medium rounded-md text-white hover:bg-green-500 transition-colors duration-200">
+                    Ver Servicios
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
