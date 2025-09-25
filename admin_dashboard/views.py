@@ -359,24 +359,22 @@ def asignar_ticket_a_mi(request, ticket_id):
         ticket.usuario_actualiza = request.user
         ticket.save()
         
-        # Crear registro de auditoría
-        TicketAuditoria.objects.create(
+        # Crear registro de auditoría usando el método correcto
+        TicketAuditoria.crear_auditoria(
             ticket=ticket,
-            campo_modificado='usuario_asignado',
-            valor_anterior='Sin asignar',
-            valor_nuevo=request.user.get_full_name() or request.user.username,
-            usuario_modificacion=request.user,
-            descripcion_cambio=f'Ticket asignado automáticamente a {request.user.get_full_name() or request.user.username}'
-        )
-        
-        # Crear registro de auditoría para el cambio de estado
-        TicketAuditoria.objects.create(
-            ticket=ticket,
-            campo_modificado='estado',
-            valor_anterior='pendiente',
-            valor_nuevo='en_proceso',
-            usuario_modificacion=request.user,
-            descripcion_cambio='Estado cambiado automáticamente al asignar el ticket'
+            operacion='UPDATE',
+            datos_anteriores={
+                'usuario_asignado': None,
+                'estado': 'pendiente'
+            },
+            datos_nuevos={
+                'usuario_asignado': request.user.id,
+                'usuario_asignado_username': request.user.username,
+                'estado': 'en_proceso'
+            },
+            campos_modificados=['usuario_asignado', 'estado'],
+            usuario=request.user,
+            comentario=f'Ticket asignado automáticamente a {request.user.get_full_name() or request.user.username} y estado cambiado a en_proceso'
         )
         
         messages.success(request, f"Te has asignado exitosamente el ticket #{ticket.codigo}.")

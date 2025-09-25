@@ -137,11 +137,11 @@
                                         </svg>
                                         Sin asignar
                                     </p>
-                                    <form method="post" action="{% url 'admin_dashboard:asignar_ticket_a_mi' ticket.id %}" class="ml-4">
+                                    <form method="post" action="{% url 'admin_dashboard:asignar_ticket_a_mi' ticket.id %}" class="ml-4" id="form-asignar-{{ ticket.id }}">
                                         {% csrf_token %}
-                                        <button type="submit" 
+                                        <button type="button" 
                                                 class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
-                                                onclick="return confirm('¿Estás seguro de que quieres asignarte este ticket?')">
+                                                onclick="confirmarAsignacion(event, '{{ ticket.id }}', '{{ ticket.codigo }}')">
                                             <svg class="-ml-0.5 mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                             </svg>
@@ -167,4 +167,49 @@
         </div>
     {% endif %}
 </div>
+
+<script>
+function confirmarAsignacion(event, ticketId, ticketCodigo) {
+    // Prevenir la propagación del evento y la acción por defecto
+    event.preventDefault();
+    event.stopPropagation();
+    
+    Swal.fire({
+        title: '¿Asignar ticket?',
+        text: `¿Estás seguro de que quieres asignarte el ticket #${ticketCodigo}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#2563eb',
+        cancelButtonColor: '#dc2626',
+        confirmButtonText: 'Sí, asignarme',
+        cancelButtonText: 'Cancelar',
+        background: '#fff',
+        customClass: {
+            popup: 'rounded-lg shadow-xl',
+            title: 'text-lg font-semibold text-gray-900',
+            content: 'text-sm text-gray-600',
+            confirmButton: 'px-4 py-2 text-sm font-medium rounded-md',
+            cancelButton: 'px-4 py-2 text-sm font-medium rounded-md'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Mostrar loading
+            Swal.fire({
+                title: 'Asignando ticket...',
+                text: 'Por favor espera',
+                icon: 'info',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Enviar el formulario
+            document.getElementById(`form-asignar-${ticketId}`).submit();
+        }
+    });
+}
+</script>
+
 {% endblock %}
