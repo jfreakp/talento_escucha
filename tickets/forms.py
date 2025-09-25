@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Agencia, Ticket
+from .models import Agencia, Ticket, crear_auditoria_ticket
 
 
 class TicketForm(forms.ModelForm):
@@ -119,6 +119,29 @@ class TicketForm(forms.ModelForm):
         
         if commit:
             ticket.save()
+            
+            # Crear registro de auditoría para la creación
+            datos_ticket = {
+                'id': ticket.id,
+                'codigo': ticket.codigo,
+                'nombre': ticket.nombre,
+                'apellido': ticket.apellido,
+                'correo': ticket.correo,
+                'agencia_nombre': ticket.agencia.nombre if ticket.agencia else None,
+                'telefono': ticket.telefono,
+                'tipo_solicitud': ticket.tipo_solicitud,
+                'estado': ticket.estado,
+                'descripcion': ticket.descripcion,
+            }
+            
+            crear_auditoria_ticket(
+                ticket=ticket,
+                operacion='CREATE',
+                datos_nuevos=datos_ticket,
+                usuario=self.user if self.user and self.user.is_authenticated else None,
+                comentario=f'Ticket creado por {self.user.get_full_name() or self.user.username if self.user and self.user.is_authenticated else "Usuario anónimo"}'
+            )
+            
         return ticket
 
 
@@ -182,4 +205,26 @@ class TicketAnonimForm(forms.ModelForm):
         
         if commit:
             ticket.save()
+            
+            # Crear registro de auditoría para la creación anónima
+            datos_ticket = {
+                'id': ticket.id,
+                'codigo': ticket.codigo,
+                'nombre': ticket.nombre,
+                'apellido': ticket.apellido,
+                'correo': ticket.correo,
+                'telefono': ticket.telefono,
+                'tipo_solicitud': ticket.tipo_solicitud,
+                'estado': ticket.estado,
+                'descripcion': ticket.descripcion,
+            }
+            
+            crear_auditoria_ticket(
+                ticket=ticket,
+                operacion='CREATE',
+                datos_nuevos=datos_ticket,
+                usuario=None,  # Usuario anónimo
+                comentario='Ticket creado por usuario anónimo'
+            )
+            
         return ticket

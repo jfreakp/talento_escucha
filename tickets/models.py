@@ -258,6 +258,8 @@ class TicketAuditoria(models.Model):
     # Tipos de operación
     OPERACION_CHOICES = [
         ('CREATE', 'Creación'),
+        ('ASSIGN', 'Asignación'),
+        ('RESOLVE', 'Resolución'),
         ('UPDATE', 'Actualización'),
         ('DELETE', 'Eliminación'),
     ]
@@ -273,7 +275,7 @@ class TicketAuditoria(models.Model):
     
     # Tipo de operación realizada
     operacion = models.CharField(
-        max_length=10,
+        max_length=20,
         choices=OPERACION_CHOICES,
         verbose_name="Operación",
         help_text="Tipo de operación realizada"
@@ -363,66 +365,20 @@ class TicketAuditoria(models.Model):
         )
 
 
-# Signals para auditoría automática
-from django.db.models.signals import post_save, post_delete
-from django.dispatch import receiver
+# Funciones auxiliares para auditoría manual
 import json
 
-
-@receiver(post_save, sender=Ticket)
-def auditoria_ticket_save(sender, instance, created, **kwargs):
+def crear_auditoria_ticket(ticket, operacion, datos_anteriores=None, datos_nuevos=None, 
+                          campos_modificados=None, usuario=None, comentario=None):
     """
-    Signal que se ejecuta después de guardar un ticket
-    Crea automáticamente el registro de auditoría
+    Función para crear auditorías de tickets de manera controlada
     """
-    operacion = 'CREATE' if created else 'UPDATE'
-    
-    # Obtener datos del ticket
-    datos_ticket = {
-        'id': instance.id,
-        'codigo': instance.codigo,
-        'nombre': instance.nombre,
-        'apellido': instance.apellido,
-        'correo': instance.correo,
-        'agencia_id': instance.agencia.id if instance.agencia else None,
-        'agencia_nombre': instance.agencia.nombre if instance.agencia else None,
-        'telefono': instance.telefono,
-        'tipo_solicitud': instance.tipo_solicitud,
-        'usuario_asignado_id': instance.usuario_asignado.id if instance.usuario_asignado else None,
-        'usuario_asignado_username': instance.usuario_asignado.username if instance.usuario_asignado else None,
-        'estado': instance.estado,
-        'descripcion': instance.descripcion,
-        'solucion': instance.solucion,
-        'fecha_creacion': instance.fecha_creacion.isoformat() if instance.fecha_creacion else None,
-        'fecha_actualizacion': instance.fecha_actualizacion.isoformat() if instance.fecha_actualizacion else None,
-    }
-    
     TicketAuditoria.crear_auditoria(
-        ticket=instance,
+        ticket=ticket,
         operacion=operacion,
-        datos_nuevos=datos_ticket,
-        usuario=instance.usuario_actualiza if not created else instance.usuario_crea,
-        comentario=f"Ticket {'creado' if created else 'actualizado'} automáticamente"
-    )
-
-
-@receiver(post_delete, sender=Ticket)
-def auditoria_ticket_delete(sender, instance, **kwargs):
-    """
-    Signal que se ejecuta antes de eliminar un ticket
-    Crea el registro de auditoría de eliminación
-    """
-    datos_ticket = {
-        'id': instance.id,
-        'nombre': instance.nombre,
-        'apellido': instance.apellido,
-        'correo': instance.correo,
-        'estado': instance.estado,
-    }
-    
-    TicketAuditoria.crear_auditoria(
-        ticket=instance,
-        operacion='DELETE',
-        datos_anteriores=datos_ticket,
-        comentario="Ticket eliminado"
+        datos_anteriores=datos_anteriores,
+        datos_nuevos=datos_nuevos,
+        campos_modificados=campos_modificados,
+        usuario=usuario,
+        comentario=comentario
     )
