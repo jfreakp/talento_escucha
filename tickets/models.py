@@ -209,9 +209,9 @@ class Ticket(models.Model):
         help_text="Descripción detallada de la solicitud"
     )
     
-    notas_internas = models.TextField(
-        verbose_name="Notas Internas",
-        help_text="Notas internas para el equipo",
+    solucion = models.TextField(
+        verbose_name="Solución",
+        help_text="Descripción de la solución implementada",
         blank=True,
         null=True
     )
@@ -392,7 +392,7 @@ def auditoria_ticket_save(sender, instance, created, **kwargs):
         'usuario_asignado_username': instance.usuario_asignado.username if instance.usuario_asignado else None,
         'estado': instance.estado,
         'descripcion': instance.descripcion,
-        'notas_internas': instance.notas_internas,
+        'solucion': instance.solucion,
         'fecha_creacion': instance.fecha_creacion.isoformat() if instance.fecha_creacion else None,
         'fecha_actualizacion': instance.fecha_actualizacion.isoformat() if instance.fecha_actualizacion else None,
     }

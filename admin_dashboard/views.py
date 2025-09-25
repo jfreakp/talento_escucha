@@ -383,3 +383,100 @@ def asignar_ticket_a_mi(request, ticket_id):
     except Exception as e:
         messages.error(request, f"Error al asignar el ticket: {str(e)}")
         return redirect('admin_dashboard:tickets_pendientes')
+
+
+@login_required 
+def formulario_solucion(request, ticket_id):
+    """Vista para mostrar el formulario de solución de un ticket"""
+    # Verificar que el usuario tenga el rol de REVISOR
+    if not request.user.groups.filter(name='REVISOR').exists():
+        messages.error(request, "No tienes permisos para acceder a esta sección.")
+        return redirect('admin_dashboard:dashboard')
+    
+    # Obtener el ticket
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+    
+    # Verificar que el ticket esté asignado al usuario actual
+    if ticket.usuario_asignado != request.user:
+        messages.warning(request, f"El ticket #{ticket.codigo} no está asignado a tu usuario.")
+        return redirect('admin_dashboard:tickets_asignados')
+    
+    # Verificar que el ticket no esté ya resuelto o cerrado
+    if ticket.estado in ['resuelto', 'cerrado']:
+        messages.warning(request, f"El ticket #{ticket.codigo} ya está {ticket.get_estado_display().lower()}.")
+        return redirect('admin_dashboard:tickets_asignados')
+    
+    context = {
+        'ticket': ticket,
+        'page_title': f'Resolver Ticket #{ticket.codigo}',
+        'page_description': 'Proporciona la solución implementada para este ticket'
+    }
+    
+    return render(request, 'admin_dashboard/resolver_ticket.html', context)
+
+
+@login_required
+def resolver_ticket(request, ticket_id):
+    """Vista para que un revisor agregue la solución a un ticket asignado"""
+    # Verificar que el usuario tenga el rol de REVISOR
+    if not request.user.groups.filter(name='REVISOR').exists():
+        messages.error(request, "No tienes permisos para realizar esta acción.")
+        return redirect('admin_dashboard:dashboard')
+    
+    # Verificar que sea una petición POST
+    if request.method != 'POST':
+        messages.error(request, "Método no permitido.")
+        return redirect('admin_dashboard:tickets_asignados')
+    
+    try:
+        # Obtener el ticket
+        ticket = get_object_or_404(Ticket, id=ticket_id)
+        
+        # Verificar que el ticket esté asignado al usuario actual
+        if ticket.usuario_asignado != request.user:
+            messages.warning(request, f"El ticket #{ticket.codigo} no está asignado a tu usuario.")
+            return redirect('admin_dashboard:tickets_asignados')
+        
+        # Verificar que el ticket no esté ya resuelto o cerrado
+        if ticket.estado in ['resuelto', 'cerrado']:
+            messages.warning(request, f"El ticket #{ticket.codigo} ya está {ticket.get_estado_display().lower()}.")
+            return redirect('admin_dashboard:tickets_asignados')
+        
+        # Obtener la solución del formulario
+        solucion = request.POST.get('solucion', '').strip()
+        if not solucion:
+            messages.error(request, "Debes proporcionar una solución para el ticket.")
+            return redirect('admin_dashboard:tickets_asignados')
+        
+        # Guardar datos anteriores para auditoría
+        datos_anteriores = {
+            'estado': ticket.estado,
+            'solucion': ticket.solucion
+        }
+        
+        # Actualizar el ticket con la solución
+        ticket.solucion = solucion
+        ticket.estado = 'resuelto'
+        ticket.usuario_actualiza = request.user
+        ticket.save()
+        
+        # Crear registro de auditoría
+        TicketAuditoria.crear_auditoria(
+            ticket=ticket,
+            operacion='UPDATE',
+            datos_anteriores=datos_anteriores,
+            datos_nuevos={
+                'estado': 'resuelto',
+                'solucion': solucion
+            },
+            campos_modificados=['estado', 'solucion'],
+            usuario=request.user,
+            comentario=f'Ticket resuelto por {request.user.get_full_name() or request.user.username} con solución proporcionada'
+        )
+        
+        messages.success(request, f"Has marcado como resuelto el ticket #{ticket.codigo} exitosamente.")
+        return redirect('admin_dashboard:tickets_asignados')
+        
+    except Exception as e:
+        messages.error(request, f"Error al resolver el ticket: {str(e)}")
+        return redirect('admin_dashboard:tickets_asignados')

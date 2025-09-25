@@ -93,8 +93,8 @@ class TicketAdmin(admin.ModelAdmin):
         ('Detalles de la Solicitud', {
             'fields': ('tipo_solicitud', 'severidad', 'descripcion', 'estado')
         }),
-        ('Asignación', {
-            'fields': ('usuario_asignado', 'notas_internas')
+        ('Asignación y Solución', {
+            'fields': ('usuario_asignado', 'solucion')
         }),
         ('Auditoría', {
             'fields': ('usuario_crea', 'usuario_actualiza', 'fecha_creacion', 'fecha_actualizacion'),

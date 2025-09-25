@@ -28,7 +28,7 @@ Tabla principal para gestionar tickets de solicitudes con todos los campos solic
 
 #### 📊 Campos Adicionales:
 - **`descripcion`** - TextField - Descripción detallada (opcional)
-- **`notas_internas`** - TextField - Notas para el equipo (opcional)
+- **`solucion`** - TextField - Descripción de la solución implementada (opcional)
 
 #### 🏷️ Opciones Disponibles:
 
