@@ -14,4 +14,7 @@ urlpatterns = [
     # URLs para tickets
     path('buscar-ticket/', views.buscar_ticket, name='buscar_ticket'),
     path('ticket/<str:codigo>/', views.view_ticket, name='view_ticket'),
+    path('tickets/pendientes/', views.tickets_pendientes, name='tickets_pendientes'),
+    path('tickets/asignados/', views.tickets_asignados, name='tickets_asignados'),
+    path('tickets/asignar-a-mi/<int:ticket_id>/', views.asignar_ticket_a_mi, name='asignar_ticket_a_mi'),
 ]

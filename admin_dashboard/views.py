@@ -285,3 +285,103 @@ def view_ticket(request, codigo):
     }
     
     return render(request, 'admin_dashboard/view_ticket.html', context)
+
+
+@login_required
+def tickets_pendientes(request):
+    """Vista para mostrar tickets pendientes - solo para revisores"""
+    # Verificar que el usuario tenga el rol de REVISOR
+    if not request.user.groups.filter(name='REVISOR').exists():
+        messages.error(request, "No tienes permisos para acceder a esta sección.")
+        return redirect('admin_dashboard:dashboard')
+    
+    # Obtener tickets sin asignar (sin usuario_asignado)
+    tickets = Ticket.objects.filter(
+        usuario_asignado__isnull=True
+    ).order_by('-fecha_creacion')
+    
+    context = {
+        'tickets': tickets,
+        'page_title': 'Tickets Pendientes',
+        'page_description': 'Lista de tickets sin asignar'
+    }
+    
+    return render(request, 'admin_dashboard/tickets_pendientes.html', context)
+
+
+@login_required
+def tickets_asignados(request):
+    """Vista para mostrar tickets asignados al revisor actual"""
+    # Verificar que el usuario tenga el rol de REVISOR
+    if not request.user.groups.filter(name='REVISOR').exists():
+        messages.error(request, "No tienes permisos para acceder a esta sección.")
+        return redirect('admin_dashboard:dashboard')
+    
+    # Obtener tickets asignados al usuario actual
+    tickets = Ticket.objects.filter(
+        usuario_asignado=request.user
+    ).order_by('-fecha_creacion')
+    
+    context = {
+        'tickets': tickets,
+        'page_title': 'Mis Tickets',
+        'page_description': 'Lista de tickets asignados a mí'
+    }
+    
+    return render(request, 'admin_dashboard/tickets_asignados.html', context)
+
+
+@login_required
+def asignar_ticket_a_mi(request, ticket_id):
+    """Vista para que un revisor se asigne un ticket a sí mismo"""
+    # Verificar que el usuario tenga el rol de REVISOR
+    if not request.user.groups.filter(name='REVISOR').exists():
+        messages.error(request, "No tienes permisos para realizar esta acción.")
+        return redirect('admin_dashboard:dashboard')
+    
+    # Verificar que sea una petición POST
+    if request.method != 'POST':
+        messages.error(request, "Método no permitido.")
+        return redirect('admin_dashboard:tickets_pendientes')
+    
+    try:
+        # Obtener el ticket
+        ticket = get_object_or_404(Ticket, id=ticket_id)
+        
+        # Verificar que el ticket no esté ya asignado
+        if ticket.usuario_asignado:
+            messages.warning(request, f"El ticket #{ticket.codigo} ya está asignado a {ticket.usuario_asignado.get_full_name() or ticket.usuario_asignado.username}.")
+            return redirect('admin_dashboard:tickets_pendientes')
+        
+        # Asignar el ticket al usuario actual
+        ticket.usuario_asignado = request.user
+        ticket.estado = 'en_proceso'  # Cambiar estado a en proceso
+        ticket.usuario_actualiza = request.user
+        ticket.save()
+        
+        # Crear registro de auditoría
+        TicketAuditoria.objects.create(
+            ticket=ticket,
+            campo_modificado='usuario_asignado',
+            valor_anterior='Sin asignar',
+            valor_nuevo=request.user.get_full_name() or request.user.username,
+            usuario_modificacion=request.user,
+            descripcion_cambio=f'Ticket asignado automáticamente a {request.user.get_full_name() or request.user.username}'
+        )
+        
+        # Crear registro de auditoría para el cambio de estado
+        TicketAuditoria.objects.create(
+            ticket=ticket,
+            campo_modificado='estado',
+            valor_anterior='pendiente',
+            valor_nuevo='en_proceso',
+            usuario_modificacion=request.user,
+            descripcion_cambio='Estado cambiado automáticamente al asignar el ticket'
+        )
+        
+        messages.success(request, f"Te has asignado exitosamente el ticket #{ticket.codigo}.")
+        return redirect('admin_dashboard:tickets_asignados')
+        
+    except Exception as e:
+        messages.error(request, f"Error al asignar el ticket: {str(e)}")
+        return redirect('admin_dashboard:tickets_pendientes')
