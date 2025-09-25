@@ -19,21 +19,6 @@
                 <div class="flex items-center space-x-4">
                     <a href="{% url 'homepage:home' %}" class="hover:bg-gray-700 px-3 py-2 rounded-md transition-colors duration-200">Inicio</a>
                     
-                    <!-- Dropdown para Solicitudes -->
-                    <div class="relative group">
-                        <button class="hover:bg-gray-700 px-3 py-2 rounded-md flex items-center transition-colors duration-200">
-                            Solicitudes
-                            <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 border" style="border-color: #e5e7eb;">
-                            <a href="{% url 'homepage:solicitud_usuario' %}" class="block px-4 py-2 text-sm hover:bg-gray-50 transition-colors duration-150" style="color: #111827;">Solicitud Usuario</a>
-                            <a href="{% url 'homepage:solicitud_anonimo' %}" class="block px-4 py-2 text-sm hover:bg-gray-50 transition-colors duration-150" style="color: #111827;">Solicitud Anónimo</a>
-                            <a href="{% url 'homepage:buscar_ticket' %}" class="block px-4 py-2 text-sm hover:bg-gray-50 transition-colors duration-150" style="color: #111827;">Buscar Ticket</a>
-                        </div>
-                    </div>
-                    
                     {% if user.is_authenticated %}
                         <span class="text-gray-300">¡Hola, {{ user.get_full_name|default:user.username }}!</span>
                         <a href="{% url 'auth_app:logout' %}" class="px-3 py-2 rounded-md transition-all duration-200 hover:scale-105" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">Cerrar Sesión</a>

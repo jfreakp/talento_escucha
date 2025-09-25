@@ -71,8 +71,45 @@ def solicitud_anonimo(request):
     return render(request, 'homepage/solicitud_anonimo.html', context)
 
 def buscar_ticket(request):
-    """Página para buscar tickets"""
-    return render(request, 'homepage/buscar_ticket.html')
+    """Página para buscar tickets públicamente"""
+    ticket = None
+    historial = None
+    error_message = None
+    
+    if request.method == 'POST':
+        codigo = request.POST.get('codigo', '').strip()
+        
+        if codigo:
+            try:
+                ticket = Ticket.objects.get(codigo=codigo)
+                # Importar el modelo de historial
+                from tickets.models import TicketAuditoria
+                historial = TicketAuditoria.objects.filter(ticket=ticket).order_by('-fecha_cambio')
+            except Ticket.DoesNotExist:
+                error_message = "No se encontró ningún ticket con ese código."
+        else:
+            error_message = "Por favor, ingresa un código de ticket."
+    
+    context = {
+        'ticket': ticket,
+        'historial': historial,
+        'error_message': error_message,
+    }
+    return render(request, 'homepage/buscar_ticket.html', context)
+
+def ver_ticket_publico(request, codigo):
+    """Vista pública para ver detalles de un ticket"""
+    ticket = get_object_or_404(Ticket, codigo=codigo)
+    
+    # Importar el modelo de historial
+    from tickets.models import TicketAuditoria
+    historial = TicketAuditoria.objects.filter(ticket=ticket).order_by('-fecha_cambio')
+    
+    context = {
+        'ticket': ticket,
+        'historial': historial,
+    }
+    return render(request, 'homepage/ver_ticket_publico.html', context)
 
 def test_styles(request):
     """Página de prueba de estilos"""

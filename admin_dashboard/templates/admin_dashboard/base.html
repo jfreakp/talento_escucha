@@ -1,0 +1,298 @@
+{% load role_tags %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Talento Escucha - Sistema PQRS{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <style>
+        :root { font-family: 'Inter', sans-serif; }
+        @supports (font-variation-settings: normal) {
+            :root { font-family: 'Inter var', sans-serif; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+<div class="bg-slate-100 overflow-y-scroll w-screen h-screen antialiased text-slate-300 selection:bg-blue-600 selection:text-white">
+    <div class="flex flex-col relative w-screen">
+        <!-- Sidebar -->
+        <div id="menu" class="bg-gray-900 min-h-screen z-10 text-slate-300 w-64 fixed left-0 h-screen flex flex-col justify-between">
+           <!-- Top Section -->
+           <div class="flex flex-col">
+               <!-- Logo -->
+               <div id="logo" class="my-4 px-6">
+                <h1 class="text-lg md:text-2xl font-bold text-white">Talento<span class="text-blue-500">Escucha</span></h1>
+                <p class="text-slate-500 text-sm">Sistema PQRS - Dashboard</p>
+               </div>
+               
+               <!-- Profile Section -->
+               <div id="profile" class="px-6 py-10">
+                <p class="text-slate-500">Bienvenido,</p>
+                <a href="#" class="inline-flex space-x-2 items-center">
+                    <span>
+                        <div class="rounded-full w-8 h-8 bg-blue-600 flex items-center justify-center text-white font-bold">
+                            {{ user.first_name|first|default:user.username|first|upper }}
+                        </div>
+                    </span>
+                    <span class="text-sm md:text-base font-bold">
+                        {{ user.get_full_name|default:user.username }}
+                    </span>
+                </a>
+               </div>
+               
+               <!-- Navigation Section -->
+               <div id="nav" class="w-full px-6">
+                
+                <!-- NAVEGACIÓN CONDICIONAL BASADA EN ROLES -->
+                {% if user|has_role:'ADMIN' %}
+
+                    <!-- Usuarios (menú principal con dropdown) -->
+                    <div class="mt-4">
+                        <button onclick="toggleDropdown('usuariosDropdown')" 
+                                class="w-full px-2 inline-flex space-x-2 items-center justify-between border-b border-slate-700 py-3 hover:bg-white/5 transition ease-linear duration-150 group {% if request.resolver_match.url_name == 'administracion_usuarios' or request.resolver_match.url_name == 'resetear_password' or request.resolver_match.url_name == 'resetear_password_usuario' %}bg-blue-800{% endif %}">
+                            <div class="inline-flex space-x-2 items-center">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 {% if request.resolver_match.url_name == 'administracion_usuarios' or request.resolver_match.url_name == 'resetear_password' or request.resolver_match.url_name == 'resetear_password_usuario' %}text-white{% endif %}">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                                    </svg>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-lg font-bold leading-5 {% if request.resolver_match.url_name == 'administracion_usuarios' or request.resolver_match.url_name == 'resetear_password' or request.resolver_match.url_name == 'resetear_password_usuario' %}text-white{% else %}text-slate-300{% endif %}">Usuarios</span>
+                                    <span class="text-sm {% if request.resolver_match.url_name == 'administracion_usuarios' or request.resolver_match.url_name == 'resetear_password' or request.resolver_match.url_name == 'resetear_password_usuario' %}text-white/50{% else %}text-slate-500{% endif %} hidden md:block">Gestión de usuarios</span>
+                                </div>
+                            </div>
+                            <div>
+                                <svg id="usuariosArrow" class="w-4 h-4 transition-transform duration-200 {% if request.resolver_match.url_name == 'administracion_usuarios' or request.resolver_match.url_name == 'resetear_password' or request.resolver_match.url_name == 'resetear_password_usuario' %}text-white transform rotate-180{% else %}text-slate-500{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </button>
+                        
+                        <!-- Dropdown de Usuarios -->
+                        <div id="usuariosDropdown" class="{% if request.resolver_match.url_name == 'administracion_usuarios' or request.resolver_match.url_name == 'resetear_password' or request.resolver_match.url_name == 'resetear_password_usuario' %}block{% else %}hidden{% endif %} ml-6 mt-2 space-y-1">
+                            <!-- Administración de Usuarios -->
+                            <a href="{% url 'admin_dashboard:administracion_usuarios' %}" 
+                               class="w-full px-2 inline-flex space-x-2 items-center py-2 hover:bg-white/5 transition ease-linear duration-150 rounded {% if request.resolver_match.url_name == 'administracion_usuarios' %}bg-blue-700{% endif %}">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 {% if request.resolver_match.url_name == 'administracion_usuarios' %}text-white{% else %}text-slate-400{% endif %}">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
+                                <span class="text-sm font-medium {% if request.resolver_match.url_name == 'administracion_usuarios' %}text-white{% else %}text-slate-300{% endif %}">Administración de usuarios</span>
+                            </a>
+                            
+                            <!-- Resetear Contraseña -->
+                            <a href="{% url 'admin_dashboard:resetear_password' %}" 
+                               class="w-full px-2 inline-flex space-x-2 items-center py-2 hover:bg-white/5 transition ease-linear duration-150 rounded {% if request.resolver_match.url_name == 'resetear_password' or request.resolver_match.url_name == 'resetear_password_usuario' %}bg-blue-700{% endif %}">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 {% if request.resolver_match.url_name == 'resetear_password' or request.resolver_match.url_name == 'resetear_password_usuario' %}text-white{% else %}text-slate-400{% endif %}">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1721.75 8.25z" />
+                                    </svg>
+                                </div>
+                                <span class="text-sm font-medium {% if request.resolver_match.url_name == 'resetear_password' or request.resolver_match.url_name == 'resetear_password_usuario' %}text-white{% else %}text-slate-300{% endif %}">Resetear contraseña</span>
+                            </a>
+                        </div>
+                    </div>
+
+                <!-- REVISOR: Solo ve Dashboard -->
+                {% elif user|has_role:"REVISOR" %}
+                    <a href="{% url 'admin_dashboard:dashboard' %}" 
+                       class="w-full px-2 inline-flex space-x-2 items-center border-b border-slate-700 py-3 bg-blue-800 hover:bg-white/5 transition ease-linear duration-150">
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-lg font-bold leading-5 text-white">Dashboard</span>
+                            <span class="text-sm text-white/50 hidden md:block">Gestión de Tickets</span>
+                        </div>
+                    </a>
+
+                <!-- SUPERUSER SIN ROL ESPECÍFICO: Ve Dashboard + Usuarios (mantiene funcionalidad completa) -->
+                {% elif user.is_superuser and not user.groups.exists %}
+                    <!-- Dashboard -->
+                    <a href="{% url 'admin_dashboard:dashboard' %}" 
+                       class="w-full px-2 inline-flex space-x-2 items-center border-b border-slate-700 py-3 hover:bg-white/5 transition ease-linear duration-150 {% if request.resolver_match.url_name == 'dashboard' %}bg-blue-800{% endif %}">
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 {% if request.resolver_match.url_name == 'dashboard' %}text-white{% endif %}">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-lg font-bold leading-5 {% if request.resolver_match.url_name == 'dashboard' %}text-white{% else %}text-slate-300{% endif %}">Dashboard</span>
+                            <span class="text-sm {% if request.resolver_match.url_name == 'dashboard' %}text-white/50{% else %}text-slate-500{% endif %} hidden md:block">Resumen General</span>
+                        </div>
+                    </a>
+
+                    <!-- Buscar Ticket -->
+                    <a href="{% url 'admin_dashboard:buscar_ticket' %}" 
+                       class="w-full px-2 inline-flex space-x-2 items-center border-b border-slate-700 py-3 hover:bg-white/5 transition ease-linear duration-150 {% if request.resolver_match.url_name == 'buscar_ticket' or request.resolver_match.url_name == 'view_ticket' %}bg-blue-800{% endif %}">
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 {% if request.resolver_match.url_name == 'buscar_ticket' or request.resolver_match.url_name == 'view_ticket' %}text-white{% endif %}">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-lg font-bold leading-5 {% if request.resolver_match.url_name == 'buscar_ticket' or request.resolver_match.url_name == 'view_ticket' %}text-white{% else %}text-slate-300{% endif %}">Buscar Ticket</span>
+                            <span class="text-sm {% if request.resolver_match.url_name == 'buscar_ticket' or request.resolver_match.url_name == 'view_ticket' %}text-white/50{% else %}text-slate-500{% endif %} hidden md:block">Buscar por código</span>
+                        </div>
+                    </a>
+
+                    <!-- Buscar Ticket -->
+                    <a href="{% url 'admin_dashboard:buscar_ticket' %}" 
+                       class="w-full px-2 inline-flex space-x-2 items-center border-b border-slate-700 py-3 hover:bg-white/5 transition ease-linear duration-150 {% if request.resolver_match.url_name == 'buscar_ticket' or request.resolver_match.url_name == 'view_ticket' %}bg-blue-800{% endif %}">
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 {% if request.resolver_match.url_name == 'buscar_ticket' or request.resolver_match.url_name == 'view_ticket' %}text-white{% endif %}">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-lg font-bold leading-5 {% if request.resolver_match.url_name == 'buscar_ticket' or request.resolver_match.url_name == 'view_ticket' %}text-white{% else %}text-slate-300{% endif %}">Buscar Ticket</span>
+                            <span class="text-sm {% if request.resolver_match.url_name == 'buscar_ticket' or request.resolver_match.url_name == 'view_ticket' %}text-white/50{% else %}text-slate-500{% endif %} hidden md:block">Buscar por código</span>
+                        </div>
+                    </a>
+
+                    <!-- Usuarios (menú principal con dropdown) -->
+                    <div class="mt-4">
+                        <button onclick="toggleDropdown('usuariosDropdownSuper')" 
+                                class="w-full px-2 inline-flex space-x-2 items-center justify-between border-b border-slate-700 py-3 hover:bg-white/5 transition ease-linear duration-150 group {% if request.resolver_match.url_name == 'administracion_usuarios' or request.resolver_match.url_name == 'resetear_password' or request.resolver_match.url_name == 'resetear_password_usuario' %}bg-blue-800{% endif %}">
+                            <div class="inline-flex space-x-2 items-center">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 {% if request.resolver_match.url_name == 'administracion_usuarios' or request.resolver_match.url_name == 'resetear_password' or request.resolver_match.url_name == 'resetear_password_usuario' %}text-white{% endif %}">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                                    </svg>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-lg font-bold leading-5 {% if request.resolver_match.url_name == 'administracion_usuarios' or request.resolver_match.url_name == 'resetear_password' or request.resolver_match.url_name == 'resetear_password_usuario' %}text-white{% else %}text-slate-300{% endif %}">Usuarios</span>
+                                    <span class="text-sm {% if request.resolver_match.url_name == 'administracion_usuarios' or request.resolver_match.url_name == 'resetear_password' or request.resolver_match.url_name == 'resetear_password_usuario' %}text-white/50{% else %}text-slate-500{% endif %} hidden md:block">Gestión de usuarios</span>
+                                </div>
+                            </div>
+                            <div>
+                                <svg id="usuariosArrowSuper" class="w-4 h-4 transition-transform duration-200 {% if request.resolver_match.url_name == 'administracion_usuarios' or request.resolver_match.url_name == 'resetear_password' or request.resolver_match.url_name == 'resetear_password_usuario' %}text-white transform rotate-180{% else %}text-slate-500{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </button>
+                        
+                        <!-- Dropdown de Usuarios -->
+                        <div id="usuariosDropdownSuper" class="{% if request.resolver_match.url_name == 'administracion_usuarios' or request.resolver_match.url_name == 'resetear_password' or request.resolver_match.url_name == 'resetear_password_usuario' %}block{% else %}hidden{% endif %} ml-6 mt-2 space-y-1">
+                            <!-- Administración de Usuarios -->
+                            <a href="{% url 'admin_dashboard:administracion_usuarios' %}" 
+                               class="w-full px-2 inline-flex space-x-2 items-center py-2 hover:bg-white/5 transition ease-linear duration-150 rounded {% if request.resolver_match.url_name == 'administracion_usuarios' %}bg-blue-700{% endif %}">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 {% if request.resolver_match.url_name == 'administracion_usuarios' %}text-white{% else %}text-slate-400{% endif %}">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
+                                <span class="text-sm font-medium {% if request.resolver_match.url_name == 'administracion_usuarios' %}text-white{% else %}text-slate-300{% endif %}">Administración de usuarios</span>
+                            </a>
+                            
+                            <!-- Resetear Contraseña -->
+                            <a href="{% url 'admin_dashboard:resetear_password' %}" 
+                               class="w-full px-2 inline-flex space-x-2 items-center py-2 hover:bg-white/5 transition ease-linear duration-150 rounded {% if request.resolver_match.url_name == 'resetear_password' or request.resolver_match.url_name == 'resetear_password_usuario' %}bg-blue-700{% endif %}">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 {% if request.resolver_match.url_name == 'resetear_password' or request.resolver_match.url_name == 'resetear_password_usuario' %}text-white{% else %}text-slate-400{% endif %}">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1721.75 8.25z" />
+                                    </svg>
+                                </div>
+                                <span class="text-sm font-medium {% if request.resolver_match.url_name == 'resetear_password' or request.resolver_match.url_name == 'resetear_password_usuario' %}text-white{% else %}text-slate-300{% endif %}">Resetear contraseña</span>
+                            </a>
+                        </div>
+                    </div>
+
+                <!-- USER: Solo Dashboard (modo de solo lectura) -->
+                {% else %}
+                    <a href="{% url 'admin_dashboard:dashboard' %}" 
+                       class="w-full px-2 inline-flex space-x-2 items-center border-b border-slate-700 py-3 bg-blue-800 hover:bg-white/5 transition ease-linear duration-150">
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-lg font-bold leading-5 text-white">Dashboard</span>
+                            <span class="text-sm text-white/50 hidden md:block">Solo Lectura</span>
+                        </div>
+                    </a>
+                {% endif %}
+               </div>
+           </div>
+           
+           <!-- Bottom Section: Logout -->
+           <div class="p-6 border-t border-slate-700">
+            <a href="{% url 'auth_app:logout' %}" class="w-full px-2 inline-flex space-x-2 items-center py-3 hover:bg-white/5 transition ease-linear duration-150 rounded-lg">
+                <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                    </svg>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-lg text-slate-300 font-bold leading-5">Cerrar Sesión</span>
+                    <span class="text-sm text-slate-500 hidden md:block">Salir del Sistema</span>
+                </div>
+            </a>
+           </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="ml-64 flex-1 p-8">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                {% block content %}
+                <!-- El contenido específico de cada página se insertará aquí -->
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<!-- JavaScript adicional específico de cada página -->
+{% endblock %}
+
+<script>
+function toggleDropdown(dropdownId) {
+    const dropdown = document.getElementById(dropdownId);
+    const arrow = document.getElementById(dropdownId.replace('Dropdown', 'Arrow'));
+    
+    if (dropdown.classList.contains('hidden')) {
+        dropdown.classList.remove('hidden');
+        arrow.classList.add('rotate-180');
+    } else {
+        dropdown.classList.add('hidden');
+        arrow.classList.remove('rotate-180');
+    }
+}
+
+// Auto-abrir dropdown si estamos en una página relacionada
+document.addEventListener('DOMContentLoaded', function() {
+    const currentPath = window.location.pathname;
+    
+    // Si estamos en administración de usuarios o resetear password, asegurar que el dropdown esté abierto
+    if (currentPath.includes('administracion_usuarios') || currentPath.includes('resetear_password')) {
+        const adminDropdown = document.getElementById('usuariosDropdown');
+        const superDropdown = document.getElementById('usuariosDropdownSuper');
+        const adminArrow = document.getElementById('usuariosArrow');
+        const superArrow = document.getElementById('usuariosArrowSuper');
+        
+        if (adminDropdown) {
+            adminDropdown.classList.remove('hidden');
+            if (adminArrow) adminArrow.classList.add('rotate-180');
+        }
+        
+        if (superDropdown) {
+            superDropdown.classList.remove('hidden');
+            if (superArrow) superArrow.classList.add('rotate-180');
+        }
+    }
+});
+</script>
+
+</body>
+</html>

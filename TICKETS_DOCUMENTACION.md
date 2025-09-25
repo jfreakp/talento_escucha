@@ -125,6 +125,7 @@ Desde allí podrás:
 - ✅ Crear tickets manualmente
 - ✅ Asignar tickets a usuarios
 - ✅ Cambiar estados
+
 - ✅ Ver histórico completo de auditoría
 - ✅ Buscar y filtrar tickets
 

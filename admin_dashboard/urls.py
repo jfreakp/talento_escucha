@@ -5,4 +5,13 @@ app_name = 'admin_dashboard'
 
 urlpatterns = [
     path('', views.dashboard_view, name='dashboard'),
+    path('usuarios/', views.administracion_usuarios, name='administracion_usuarios'),
+    path('usuarios/agregar/', views.agregar_usuario, name='agregar_usuario'),
+    path('usuarios/eliminar/<int:user_id>/', views.eliminar_usuario, name='eliminar_usuario'),
+    path('usuarios/editar/<int:user_id>/', views.editar_usuario, name='editar_usuario'),
+    path('usuarios/resetear-password/', views.resetear_password, name='resetear_password'),
+    path('usuarios/resetear-password/<int:user_id>/', views.resetear_password_usuario, name='resetear_password_usuario'),
+    # URLs para tickets
+    path('buscar-ticket/', views.buscar_ticket, name='buscar_ticket'),
+    path('ticket/<str:codigo>/', views.view_ticket, name='view_ticket'),
 ]

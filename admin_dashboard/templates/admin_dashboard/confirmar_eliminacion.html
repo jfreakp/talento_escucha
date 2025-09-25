@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmar Eliminación - Talento Escucha</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <style>
+        :root { font-family: 'Inter', sans-serif; }
+        @supports (font-variation-settings: normal) {
+            :root { font-family: 'Inter var', sans-serif; }
+        }
+        /* Estilos para inputs */
+        input[type="text"], input[type="email"], input[type="password"], textarea, select {
+            color: #111827 !important;
+        }
+        input[type="text"]::placeholder, input[type="email"]::placeholder, input[type="password"]::placeholder, textarea::placeholder {
+            color: #9ca3af !important;
+        }
+    </style>
+</head>
+<body>
+<div class="bg-slate-100 overflow-y-scroll w-screen h-screen antialiased text-slate-300 selection:bg-blue-600 selection:text-white">
+    <div class="flex flex-col relative w-screen">
+        <!-- Sidebar -->
+        <div id="menu" class="bg-gray-900 min-h-screen z-10 text-slate-300 w-64 fixed left-0 h-screen flex flex-col justify-between">
+           <!-- Top Section -->
+           <div class="flex flex-col">
+               <div id="logo" class="my-4 px-6">
+                <h1 class="text-lg md:text-2xl font-bold text-white">Talento<span class="text-blue-500">Escucha</span></h1>
+                <p class="text-slate-500 text-sm">Sistema PQRS - Dashboard</p>
+               </div>
+               
+               <div id="profile" class="px-6 py-10">
+                <p class="text-slate-500">Bienvenido,</p>
+                <a href="#" class="inline-flex space-x-2 items-center">
+                    <span>
+                        <div class="rounded-full w-8 h-8 bg-blue-600 flex items-center justify-center text-white font-bold">
+                            {{ user.first_name|first|default:user.username|first|upper }}
+                        </div>
+                    </span>
+                    <span class="text-sm md:text-base font-bold">
+                        {{ user.get_full_name|default:user.username }}
+                    </span>
+                </a>
+               </div>
+               
+               <div id="nav" class="w-full px-6">
+                <!-- Dashboard -->
+                <a href="{% url 'admin_dashboard:dashboard' %}" class="w-full px-2 inline-flex space-x-2 items-center border-b border-slate-700 py-3 hover:bg-white/5 transition ease-linear duration-150">
+                    <div>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                        </svg>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-lg text-slate-300 font-bold leading-5">Dashboard</span>
+                        <span class="text-sm text-slate-500 hidden md:block">Información General</span>
+                    </div>
+                </a>
+
+                <!-- Usuarios Dropdown -->
+                <div class="relative">
+                    <button onclick="toggleDropdown('usuariosDropdown')" class="w-full px-2 inline-flex space-x-2 items-center justify-between border-b border-slate-700 py-3 hover:bg-white/5 transition ease-linear duration-150">
+                        <div class="inline-flex space-x-2 items-center">
+                            <div>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                                </svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-lg text-slate-300 font-bold leading-5">Usuarios</span>
+                                <span class="text-sm text-slate-500 hidden md:block">Gestión de Usuarios</span>
+                            </div>
+                        </div>
+                        <div>
+                            <svg id="usuariosArrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </button>
+                    
+                    <!-- Dropdown Content -->
+                    <div id="usuariosDropdown" class="hidden ml-8 mt-2 space-y-2">
+                        <a href="{% url 'admin_dashboard:administracion_usuarios' %}" class="block px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded transition ease-linear duration-150">
+                            Administración
+                        </a>
+                    </div>
+                </div>
+               </div>
+           </div>
+           
+           <!-- Bottom Section - Logout -->
+           <div class="px-6 py-6">
+            <a href="{% url 'auth_app:logout' %}" class="w-full px-2 inline-flex space-x-2 items-center border-t border-slate-700 pt-6 hover:bg-white/5 transition ease-linear duration-150">
+                <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                    </svg>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-lg text-slate-300 font-bold leading-5">Cerrar Sesión</span>
+                    <span class="text-sm text-slate-500 hidden md:block">Salir del Sistema</span>
+                </div>
+            </a>
+           </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="ml-64 flex-1 p-8">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <!-- Header -->
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Confirmar Eliminación</h1>
+                    <p class="text-gray-600">¿Estás seguro de que deseas eliminar este usuario?</p>
+                </div>
+
+                <!-- Información del usuario a eliminar -->
+                <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-8 w-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-medium text-red-800">Advertencia: Esta acción no se puede deshacer</h3>
+                            <div class="mt-2 text-sm text-red-700">
+                                <p>Vas a eliminar permanentemente al usuario:</p>
+                                <div class="mt-3 bg-white p-4 rounded border">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-12 w-12">
+                                            <div class="h-12 w-12 rounded-full bg-blue-600 flex items-center justify-center">
+                                                <span class="text-white font-medium">
+                                                    {{ usuario.first_name|first|default:usuario.username|first|upper }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <p class="text-lg font-medium text-gray-900">
+                                                {{ usuario.get_full_name|default:usuario.username }}
+                                            </p>
+                                            <p class="text-gray-600">@{{ usuario.username }}</p>
+                                            <p class="text-gray-600">{{ usuario.email|default:"Sin email" }}</p>
+                                            <p class="text-sm text-gray-500">
+                                                Registrado: {{ usuario.date_joined|date:"d/m/Y H:i" }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="flex justify-end space-x-4">
+                    <a href="{% url 'admin_dashboard:administracion_usuarios' %}" 
+                       class="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        Cancelar
+                    </a>
+                    
+                    <form method="post" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Confirmar Eliminación
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleDropdown(dropdownId) {
+    const dropdown = document.getElementById(dropdownId);
+    const arrow = document.getElementById(dropdownId.replace('Dropdown', 'Arrow'));
+    
+    if (dropdown.classList.contains('hidden')) {
+        dropdown.classList.remove('hidden');
+        arrow.style.transform = 'rotate(180deg)';
+    } else {
+        dropdown.classList.add('hidden');
+        arrow.style.transform = 'rotate(0deg)';
+    }
+}
+</script>
+</body>
+</html>
