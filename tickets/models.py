@@ -365,20 +365,117 @@ class TicketAuditoria(models.Model):
         )
 
 
-# Funciones auxiliares para auditoría manual
+# Sistema de Auditoría Automática
+from django.db.models.signals import post_save, pre_save
+from django.dispatch import receiver
 import json
 
-def crear_auditoria_ticket(ticket, operacion, datos_anteriores=None, datos_nuevos=None, 
-                          campos_modificados=None, usuario=None, comentario=None):
+# Variable para almacenar el estado anterior del ticket
+_ticket_estados_anteriores = {}
+
+@receiver(pre_save, sender=Ticket)
+def guardar_estado_anterior(sender, instance, **kwargs):
     """
-    Función para crear auditorías de tickets de manera controlada
+    Guarda el estado anterior del ticket antes de guardarlo
     """
-    TicketAuditoria.crear_auditoria(
-        ticket=ticket,
-        operacion=operacion,
-        datos_anteriores=datos_anteriores,
-        datos_nuevos=datos_nuevos,
-        campos_modificados=campos_modificados,
-        usuario=usuario,
-        comentario=comentario
-    )
+    if instance.pk:  # Solo si el ticket ya existe
+        try:
+            ticket_anterior = Ticket.objects.get(pk=instance.pk)
+            _ticket_estados_anteriores[instance.pk] = {
+                'usuario_asignado': ticket_anterior.usuario_asignado,
+                'estado': ticket_anterior.estado,
+                'solucion': ticket_anterior.solucion
+            }
+        except Ticket.DoesNotExist:
+            pass
+
+@receiver(post_save, sender=Ticket)
+def auditoria_automatica_ticket(sender, instance, created, **kwargs):
+    """
+    Signal que registra automáticamente las 3 acciones principales:
+    1. Creación del ticket
+    2. Asignación del ticket  
+    3. Resolución del ticket
+    """
+    try:
+        # 1. CREACIÓN: Cuando se crea un ticket nuevo
+        if created:
+            datos_ticket = {
+                'codigo': instance.codigo,
+                'nombre': instance.nombre,
+                'apellido': instance.apellido,
+                'correo': instance.correo,
+                'agencia': instance.agencia.nombre if instance.agencia else None,
+                'tipo_solicitud': instance.tipo_solicitud,
+                'estado': instance.estado,
+                'descripcion': instance.descripcion[:100] + '...' if len(instance.descripcion) > 100 else instance.descripcion,
+            }
+            
+            TicketAuditoria.crear_auditoria(
+                ticket=instance,
+                operacion='CREATE',
+                datos_nuevos=datos_ticket,
+                usuario=instance.usuario_crea,
+                comentario=f'Ticket creado por {instance.usuario_crea.get_full_name() or instance.usuario_crea.username if instance.usuario_crea else "Sistema"}'
+            )
+            return
+        
+        # Para tickets existentes, verificar cambios usando el estado anterior guardado
+        estado_anterior = _ticket_estados_anteriores.get(instance.pk)
+        if estado_anterior:
+            
+            # 2. ASIGNACIÓN: Cuando se asigna un ticket (cambió usuario_asignado de None a algún usuario)
+            if (estado_anterior['usuario_asignado'] is None and 
+                instance.usuario_asignado is not None):
+                
+                datos_anteriores = {
+                    'usuario_asignado': None,
+                    'estado': estado_anterior['estado']
+                }
+                
+                datos_nuevos = {
+                    'usuario_asignado': instance.usuario_asignado.username,
+                    'estado': instance.estado
+                }
+                
+                TicketAuditoria.crear_auditoria(
+                    ticket=instance,
+                    operacion='ASSIGN',
+                    datos_anteriores=datos_anteriores,
+                    datos_nuevos=datos_nuevos,
+                    campos_modificados=['usuario_asignado', 'estado'],
+                    usuario=instance.usuario_actualiza,
+                    comentario=f'Ticket asignado a {instance.usuario_asignado.get_full_name() or instance.usuario_asignado.username}'
+                )
+            
+            # 3. RESOLUCIÓN: Cuando se resuelve un ticket (estado cambió a "resuelto")
+            elif (estado_anterior['estado'] != 'resuelto' and 
+                  instance.estado == 'resuelto'):
+                
+                datos_anteriores = {
+                    'estado': estado_anterior['estado'],
+                    'solucion': estado_anterior['solucion'] or ""
+                }
+                
+                datos_nuevos = {
+                    'estado': instance.estado,
+                    'solucion': instance.solucion or ""
+                }
+                
+                TicketAuditoria.crear_auditoria(
+                    ticket=instance,
+                    operacion='RESOLVE',
+                    datos_anteriores=datos_anteriores,
+                    datos_nuevos=datos_nuevos,
+                    campos_modificados=['estado', 'solucion'],
+                    usuario=instance.usuario_actualiza,
+                    comentario=f'Ticket resuelto por {instance.usuario_actualiza.get_full_name() or instance.usuario_actualiza.username if instance.usuario_actualiza else "Sistema"}'
+                )
+            
+            # Limpiar el estado anterior después de usarlo
+            del _ticket_estados_anteriores[instance.pk]
+            
+    except Exception as e:
+        # En caso de error, no afectar el guardado del ticket
+        print(f"Error en auditoría automática: {e}")
+        pass

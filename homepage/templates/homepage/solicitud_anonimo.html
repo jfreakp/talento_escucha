@@ -3,6 +3,15 @@
 {% block title %}Solicitud Usuario - {{ block.super }}{% endblock %}
 
 {% block content %}
+<!-- Hero Section -->
+<div class="bg-gradient-to-r from-purple-600 to-purple-800 text-zinc-700">
+    <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Solicitud Anónimo</h1>
+            <p class="text-xl text-zinc-500">Ingrese su solicitud de manera anónima</p>
+        </div>
+    </div>
+</div>
 
 <!-- Contenido Principal -->
 <div class="py-16 bg-white">
@@ -186,9 +195,9 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <p class="text-gray-600 mb-6">También puedes hacer una solicitud con datos de contacto o buscar un ticket existente</p>
         <div class="space-x-4">
-            <a href="{% url 'homepage:solicitud_anonimo' %}" 
-               class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors duration-200">
-                Solicitar Anónimamente
+            <a href="{% url 'homepage:solicitud_usuario' %}" 
+               class="inline-flex items-center px-6 py-3 border border-blue-600 text-base font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50 transition-colors duration-200">
+                Solicitud Usuario
             </a>
             <a href="{% url 'homepage:buscar_ticket' %}" 
                class="inline-flex items-center px-6 py-3 border border-purple-600 text-base font-medium rounded-md text-purple-600 bg-white hover:bg-purple-50 transition-colors duration-200">

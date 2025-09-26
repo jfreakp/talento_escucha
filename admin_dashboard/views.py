@@ -5,7 +5,7 @@ from django.contrib.auth.forms import UserCreationForm, SetPasswordForm
 from django.contrib import messages
 from django.http import JsonResponse
 from django.core.exceptions import PermissionDenied
-from tickets.models import Ticket, Agencia, TicketAuditoria, crear_auditoria_ticket
+from tickets.models import Ticket, Agencia, TicketAuditoria
 from .decorators import require_role, user_can_manage_users
 
 
@@ -353,33 +353,11 @@ def asignar_ticket_a_mi(request, ticket_id):
             messages.warning(request, f"El ticket #{ticket.codigo} ya está asignado a {ticket.usuario_asignado.get_full_name() or ticket.usuario_asignado.username}.")
             return redirect('admin_dashboard:tickets_pendientes')
         
-        # Guardar datos anteriores para auditoría
-        datos_anteriores = {
-            'usuario_asignado': None,
-            'usuario_asignado_username': None,
-            'estado': ticket.estado
-        }
-        
         # Asignar el ticket al usuario actual
         ticket.usuario_asignado = request.user
         ticket.estado = 'en_proceso'  # Cambiar estado a en proceso
         ticket.usuario_actualiza = request.user
-        ticket.save()
-        
-        # Crear registro de auditoría específico para asignación
-        crear_auditoria_ticket(
-            ticket=ticket,
-            operacion='ASSIGN',
-            datos_anteriores=datos_anteriores,
-            datos_nuevos={
-                'usuario_asignado': request.user.id,
-                'usuario_asignado_username': request.user.username,
-                'estado': 'en_proceso'
-            },
-            campos_modificados=['usuario_asignado', 'estado'],
-            usuario=request.user,
-            comentario=f'Ticket asignado a {request.user.get_full_name() or request.user.username}'
-        )
+        ticket.save()  # La auditoría se registra automáticamente con el signal
         
         messages.success(request, f"Te has asignado exitosamente el ticket #{ticket.codigo}.")
         return redirect('admin_dashboard:tickets_asignados')
@@ -452,31 +430,11 @@ def resolver_ticket(request, ticket_id):
             messages.error(request, "Debes proporcionar una solución para el ticket.")
             return redirect('admin_dashboard:tickets_asignados')
         
-        # Guardar datos anteriores para auditoría
-        datos_anteriores = {
-            'estado': ticket.estado,
-            'solucion': ticket.solucion or ""
-        }
-        
         # Actualizar el ticket con la solución
         ticket.solucion = solucion
         ticket.estado = 'resuelto'
         ticket.usuario_actualiza = request.user
-        ticket.save()
-        
-        # Crear registro de auditoría específico para resolución
-        crear_auditoria_ticket(
-            ticket=ticket,
-            operacion='RESOLVE',
-            datos_anteriores=datos_anteriores,
-            datos_nuevos={
-                'estado': 'resuelto',
-                'solucion': solucion
-            },
-            campos_modificados=['estado', 'solucion'],
-            usuario=request.user,
-            comentario=f'Ticket resuelto por {request.user.get_full_name() or request.user.username}'
-        )
+        ticket.save()  # La auditoría se registra automáticamente con el signal
         
         messages.success(request, f"Has marcado como resuelto el ticket #{ticket.codigo} exitosamente.")
         return redirect('admin_dashboard:tickets_asignados')
