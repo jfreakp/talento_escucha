@@ -3,10 +3,21 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.forms import UserCreationForm, SetPasswordForm
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import PermissionDenied
+from django.utils import timezone
+from django.db.models import Q
+from django.core.paginator import Paginator
 from tickets.models import Ticket, Agencia, TicketAuditoria
-from .decorators import require_role, user_can_manage_users
+from .decorators import require_role, user_can_manage_users, user_has_any_role
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.platypus.flowables import PageBreak
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+import datetime
 
 
 @login_required
@@ -442,3 +453,211 @@ def resolver_ticket(request, ticket_id):
     except Exception as e:
         messages.error(request, f"Error al resolver el ticket: {str(e)}")
         return redirect('admin_dashboard:tickets_asignados')
+
+
+@login_required
+@user_has_any_role(['ADMIN', 'REVISOR'])
+def reporte_tickets(request):
+    """Vista para generar reportes de tickets en PDF"""
+    
+    # Función auxiliar para aplicar filtros
+    def aplicar_filtros(query, fecha_desde, fecha_hasta, estado, tipo_solicitud):
+        if fecha_desde:
+            try:
+                fecha_desde_obj = datetime.datetime.strptime(fecha_desde, '%Y-%m-%d').date()
+                query = query.filter(fecha_creacion__date__gte=fecha_desde_obj)
+            except ValueError:
+                pass
+        
+        if fecha_hasta:
+            try:
+                fecha_hasta_obj = datetime.datetime.strptime(fecha_hasta, '%Y-%m-%d').date()
+                query = query.filter(fecha_creacion__date__lte=fecha_hasta_obj)
+            except ValueError:
+                pass
+        
+        if estado and estado != 'todos':
+            query = query.filter(estado=estado)
+        
+        if tipo_solicitud and tipo_solicitud != 'todos':
+            query = query.filter(tipo_solicitud=tipo_solicitud)
+        
+        return query.order_by('-fecha_creacion')
+    
+    # Obtener filtros de POST o GET (para paginación)
+    if request.method == 'POST' or request.GET.get('accion') == 'buscar':
+        # Obtener filtros del formulario (POST) o parámetros URL (GET)
+        if request.method == 'POST':
+            fecha_desde = request.POST.get('fecha_desde')
+            fecha_hasta = request.POST.get('fecha_hasta')
+            estado = request.POST.get('estado')
+            tipo_solicitud = request.POST.get('tipo_solicitud')
+            accion = request.POST.get('accion', 'buscar')
+        else:  # GET con parámetros de búsqueda
+            fecha_desde = request.GET.get('fecha_desde')
+            fecha_hasta = request.GET.get('fecha_hasta')
+            estado = request.GET.get('estado')
+            tipo_solicitud = request.GET.get('tipo_solicitud')
+            accion = request.GET.get('accion', 'buscar')
+        
+        # Construir queryset base
+        tickets_query = Ticket.objects.all()
+        
+        # Aplicar filtros
+        tickets = aplicar_filtros(tickets_query, fecha_desde, fecha_hasta, estado, tipo_solicitud)
+        
+        # Si la acción es descargar PDF
+        if accion == 'descargar':
+            return generar_pdf_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitud)
+        
+        # Si la acción es buscar, mostrar resultados en pantalla
+        else:
+            # Paginación
+            paginator = Paginator(tickets, 10)  # 10 tickets por página
+            page_number = request.GET.get('page', 1)
+            page_obj = paginator.get_page(page_number)
+            
+            # Preparar información de filtros
+            filtros_aplicados = {
+                'fecha_desde': fecha_desde,
+                'fecha_hasta': fecha_hasta,
+                'estado': estado,
+                'tipo_solicitud': tipo_solicitud,
+            }
+            
+            context = {
+                'user': request.user,
+                'estados_choices': Ticket.ESTADO_CHOICES,
+                'tipos_choices': Ticket.TIPO_SOLICITUD_CHOICES,
+                'tickets': page_obj,
+                'total_tickets': tickets.count(),
+                'filtros_aplicados': filtros_aplicados,
+                'mostrar_resultados': True,
+            }
+            
+            return render(request, 'admin_dashboard/reporte_tickets.html', context)
+    
+    # GET request - mostrar formulario
+    context = {
+        'user': request.user,
+        'estados_choices': Ticket.ESTADO_CHOICES,
+        'tipos_choices': Ticket.TIPO_SOLICITUD_CHOICES,
+        'mostrar_resultados': False,
+    }
+    
+    return render(request, 'admin_dashboard/reporte_tickets.html', context)
+
+
+def generar_pdf_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitud):
+    """Función auxiliar para generar el PDF del reporte"""
+    
+    # Generar PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="reporte_tickets_{timezone.now().strftime("%Y%m%d_%H%M%S")}.pdf"'
+    
+    # Crear el documento PDF
+    doc = SimpleDocTemplate(response, pagesize=A4, topMargin=1*inch)
+    
+    # Estilos
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=16,
+        spaceAfter=30,
+        alignment=TA_CENTER,
+        textColor=colors.darkblue
+    )
+    
+    subtitle_style = ParagraphStyle(
+        'CustomSubtitle',
+        parent=styles['Heading2'],
+        fontSize=12,
+        spaceAfter=20,
+        alignment=TA_LEFT
+    )
+    
+    # Contenido del PDF
+    content = []
+    
+    # Título
+    title = Paragraph("REPORTE DE TICKETS", title_style)
+    content.append(title)
+    content.append(Spacer(1, 20))
+    
+    # Información de filtros aplicados
+    filtros_info = []
+    if fecha_desde:
+        filtros_info.append(f"Fecha desde: {fecha_desde}")
+    if fecha_hasta:
+        filtros_info.append(f"Fecha hasta: {fecha_hasta}")
+    if estado and estado != 'todos':
+        estado_display = dict(Ticket.ESTADO_CHOICES).get(estado, estado)
+        filtros_info.append(f"Estado: {estado_display}")
+    if tipo_solicitud and tipo_solicitud != 'todos':
+        tipo_display = dict(Ticket.TIPO_SOLICITUD_CHOICES).get(tipo_solicitud, tipo_solicitud)
+        filtros_info.append(f"Tipo: {tipo_display}")
+    
+    if filtros_info:
+        filtros_text = " | ".join(filtros_info)
+        filtros_para = Paragraph(f"<b>Filtros aplicados:</b> {filtros_text}", styles['Normal'])
+        content.append(filtros_para)
+        content.append(Spacer(1, 20))
+    
+    # Resumen estadístico
+    total_tickets = tickets.count()
+    resumen_para = Paragraph(f"<b>Total de tickets encontrados:</b> {total_tickets}", subtitle_style)
+    content.append(resumen_para)
+    content.append(Spacer(1, 10))
+    
+    # Fecha de generación
+    fecha_generacion = timezone.now().strftime("%d/%m/%Y %H:%M:%S")
+    fecha_para = Paragraph(f"<b>Fecha de generación:</b> {fecha_generacion}", styles['Normal'])
+    content.append(fecha_para)
+    content.append(Spacer(1, 20))
+    
+    if tickets.exists():
+        # Crear tabla con los datos
+        data = [['Código', 'Tipo', 'Estado', 'Severidad', 'Fecha Creación', 'Asignado a']]
+        
+        for ticket in tickets:
+            # Formatear datos
+            tipo_display = dict(Ticket.TIPO_SOLICITUD_CHOICES).get(ticket.tipo_solicitud, ticket.tipo_solicitud)
+            estado_display = dict(Ticket.ESTADO_CHOICES).get(ticket.estado, ticket.estado)
+            severidad_display = dict(Ticket.SEVERIDAD_CHOICES).get(ticket.severidad, ticket.severidad)
+            fecha_creacion = ticket.fecha_creacion.strftime("%d/%m/%Y")
+            asignado = ticket.usuario_asignado.get_full_name() if ticket.usuario_asignado else 'Sin asignar'
+            
+            data.append([
+                ticket.codigo,
+                tipo_display,
+                estado_display,
+                severidad_display,
+                fecha_creacion,
+                asignado[:20] + '...' if len(asignado) > 20 else asignado
+            ])
+        
+        # Crear tabla
+        table = Table(data, colWidths=[1*inch, 1*inch, 1*inch, 1*inch, 1.2*inch, 1.3*inch])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        
+        content.append(table)
+    else:
+        no_data_para = Paragraph("No se encontraron tickets con los filtros aplicados.", styles['Normal'])
+        content.append(no_data_para)
+    
+    # Construir el PDF
+    doc.build(content)
+    return response

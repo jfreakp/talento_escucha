@@ -88,3 +88,28 @@ def user_can_view_tickets(user):
     if user.is_superuser:
         return True
     return user.groups.filter(name__in=['ADMIN', 'REVISOR', 'USER']).exists()
+
+
+def require_any_role(allowed_roles):
+    """
+    Decorador que permite el acceso si el usuario tiene cualquiera de los roles especificados
+    """
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            if not request.user.is_authenticated:
+                from django.contrib.auth.views import redirect_to_login
+                return redirect_to_login(request.get_full_path())
+            
+            # Los superusuarios siempre tienen acceso
+            if request.user.is_superuser:
+                return view_func(request, *args, **kwargs)
+            
+            # Verificar si el usuario tiene alguno de los roles permitidos
+            user_roles = request.user.groups.values_list('name', flat=True)
+            if not any(role in allowed_roles for role in user_roles):
+                raise PermissionDenied(f"Se requiere uno de los siguientes roles para acceder: {', '.join(allowed_roles)}")
+            
+            return view_func(request, *args, **kwargs)
+        return wrapper
+    return decorator

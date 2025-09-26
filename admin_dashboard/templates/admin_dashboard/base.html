@@ -166,6 +166,43 @@
                         </div>
                     </div>
 
+                    <!-- Reportería (menú principal con dropdown) -->
+                    <div class="mt-4">
+                        <button onclick="toggleDropdown('reporteriaDropdown')" 
+                                class="w-full px-2 inline-flex space-x-2 items-center justify-between border-b border-slate-700 py-3 hover:bg-white/5 transition ease-linear duration-150 group {% if request.resolver_match.url_name == 'reporte_tickets' %}bg-blue-800{% endif %}">
+                            <div class="inline-flex space-x-2 items-center">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 {% if request.resolver_match.url_name == 'reporte_tickets' %}text-white{% endif %}">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+                                    </svg>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-lg font-bold leading-5 {% if request.resolver_match.url_name == 'reporte_tickets' %}text-white{% else %}text-slate-300{% endif %}">Reportería</span>
+                                    <span class="text-sm {% if request.resolver_match.url_name == 'reporte_tickets' %}text-white/50{% else %}text-slate-500{% endif %} hidden md:block">Informes y reportes</span>
+                                </div>
+                            </div>
+                            <div>
+                                <svg id="reporteriaArrow" class="w-4 h-4 transition-transform duration-200 {% if request.resolver_match.url_name == 'reporte_tickets' %}text-white transform rotate-180{% else %}text-slate-500{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </button>
+                        
+                        <!-- Dropdown de Reportería -->
+                        <div id="reporteriaDropdown" class="{% if request.resolver_match.url_name == 'reporte_tickets' %}block{% else %}hidden{% endif %} ml-6 mt-2 space-y-1">
+                            <!-- Reporte de Tickets -->
+                            <a href="{% url 'admin_dashboard:reporte_tickets' %}" 
+                               class="w-full px-2 inline-flex space-x-2 items-center py-2 hover:bg-white/5 transition ease-linear duration-150 rounded {% if request.resolver_match.url_name == 'reporte_tickets' %}bg-blue-700{% endif %}">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 {% if request.resolver_match.url_name == 'reporte_tickets' %}text-white{% else %}text-slate-400{% endif %}">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                    </svg>
+                                </div>
+                                <span class="text-sm font-medium {% if request.resolver_match.url_name == 'reporte_tickets' %}text-white{% else %}text-slate-300{% endif %}">Reporte Tickets</span>
+                            </a>
+                        </div>
+                    </div>
+
                 <!-- SUPERUSER SIN ROL ESPECÍFICO: Ve Dashboard + Usuarios (mantiene funcionalidad completa) -->
                 {% elif user.is_superuser and not user.groups.exists %}
                     <!-- Dashboard -->
@@ -352,6 +389,17 @@ document.addEventListener('DOMContentLoaded', function() {
         if (ticketsDropdown) {
             ticketsDropdown.classList.remove('hidden');
             if (ticketsArrow) ticketsArrow.classList.add('rotate-180');
+        }
+    }
+    
+    // Si estamos en reportes, asegurar que el dropdown de reportería esté abierto
+    if (currentPath.includes('reportes/')) {
+        const reporteriaDropdown = document.getElementById('reporteriaDropdown');
+        const reporteriaArrow = document.getElementById('reporteriaArrow');
+        
+        if (reporteriaDropdown) {
+            reporteriaDropdown.classList.remove('hidden');
+            if (reporteriaArrow) reporteriaArrow.classList.add('rotate-180');
         }
     }
 });

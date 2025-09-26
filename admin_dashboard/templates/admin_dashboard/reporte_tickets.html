@@ -1,0 +1,407 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}Reporte de Tickets - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .filter-section {
+        background: #f8fafc;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .btn-generate {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-generate:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ml-64 p-8">
+    <div class="w-full">
+        <!-- Encabezado -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Reporte de Tickets</h1>
+            <p class="text-gray-600">Genera reportes en PDF de los tickets con filtros personalizados</p>
+        </div>
+
+        <!-- Formulario de Filtros -->
+        <div class="form-container p-4 mb-6 max-w-4xl">
+            <form method="post" id="reporteForm">
+                {% csrf_token %}
+                
+                <div class="filter-section p-3 mb-3">
+                    <div class="flex flex-wrap items-end gap-4">
+                        <!-- Fecha Desde -->
+                        <div class="flex-shrink-0">
+                            <label for="fecha_desde" class="block text-xs font-medium text-gray-700 mb-1">
+                                Desde:
+                            </label>
+                            <input type="date" 
+                                   id="fecha_desde" 
+                                   name="fecha_desde" 
+                                   class="px-2 py-1 text-sm text-black border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        
+                        <!-- Fecha Hasta -->
+                        <div class="flex-shrink-0">
+                            <label for="fecha_hasta" class="block text-xs font-medium text-gray-700 mb-1">
+                                Hasta:
+                            </label>
+                            <input type="date" 
+                                   id="fecha_hasta" 
+                                   name="fecha_hasta" 
+                                   class="px-2 py-1 text-sm text-black border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        
+                        <!-- Estado -->
+                        <div class="flex-shrink-0">
+                            <label for="estado" class="block text-xs font-medium text-gray-700 mb-1">
+                                Estado:
+                            </label>
+                            <select id="estado" 
+                                    name="estado" 
+                                    class="px-2 py-1 text-sm text-black border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="todos">Todos los estados</option>
+                                {% for estado_value, estado_display in estados_choices %}
+                                <option value="{{ estado_value }}">{{ estado_display }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Tipo de Solicitud -->
+                        <div class="flex-shrink-0">
+                            <label for="tipo_solicitud" class="block text-xs font-medium text-gray-700 mb-1">
+                                Tipo Solicitud:
+                            </label>
+                            <select id="tipo_solicitud" 
+                                    name="tipo_solicitud" 
+                                    class="px-2 py-1 text-sm text-black border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="todos">Todos los tipos</option>
+                                {% for tipo_value, tipo_display in tipos_choices %}
+                                <option value="{{ tipo_value }}">{{ tipo_display }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Botones -->
+                        <div class="flex items-end space-x-2">
+                            <button type="submit" 
+                                    name="accion" 
+                                    value="buscar"
+                                    class="px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition duration-200">
+                                Buscar
+                            </button>
+                            
+                            {% if mostrar_resultados %}
+                            <button type="submit" 
+                                    name="accion" 
+                                    value="descargar"
+                                    class="px-3 py-1 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition duration-200">
+                                Descargar PDF
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Resultados de la búsqueda -->
+        {% if mostrar_resultados %}
+        <div class="form-container p-8 mb-8">
+            <div class="mb-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Resultados Encontrados ({{ total_tickets }} tickets)
+                </h3>
+                
+                <!-- Información de filtros aplicados -->
+                {% if filtros_aplicados.fecha_desde or filtros_aplicados.fecha_hasta or filtros_aplicados.estado != 'todos' or filtros_aplicados.tipo_solicitud != 'todos' %}
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-3 mb-4 rounded-r-lg">
+                    <p class="text-sm text-blue-700">
+                        <strong>Filtros aplicados:</strong>
+                        {% if filtros_aplicados.fecha_desde %}Fecha desde: {{ filtros_aplicados.fecha_desde }} | {% endif %}
+                        {% if filtros_aplicados.fecha_hasta %}Fecha hasta: {{ filtros_aplicados.fecha_hasta }} | {% endif %}
+                        {% if filtros_aplicados.estado != 'todos' %}Estado: {{ filtros_aplicados.estado }} | {% endif %}
+                        {% if filtros_aplicados.tipo_solicitud != 'todos' %}Tipo: {{ filtros_aplicados.tipo_solicitud }}{% endif %}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Tabla de resultados -->
+            {% if tickets %}
+            <div class="overflow-x-auto shadow-lg rounded-lg">
+                <table class="w-full bg-white">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Severidad</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Creación</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asignado a</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for ticket in tickets %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    {{ ticket.codigo }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                {% if ticket.tipo_solicitud == 'P' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Petición
+                                    </span>
+                                {% elif ticket.tipo_solicitud == 'Q' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        Queja
+                                    </span>
+                                {% elif ticket.tipo_solicitud == 'R' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        Reclamo
+                                    </span>
+                                {% elif ticket.tipo_solicitud == 'S' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                        Sugerencia
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                {% if ticket.estado == 'pendiente' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                                        Pendiente
+                                    </span>
+                                {% elif ticket.estado == 'en_proceso' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                                        En Proceso
+                                    </span>
+                                {% elif ticket.estado == 'resuelto' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                                        Resuelto
+                                    </span>
+                                {% elif ticket.estado == 'cerrado' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        <span class="w-2 h-2 bg-gray-500 rounded-full mr-2"></span>
+                                        Cerrado
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                {% if ticket.severidad == 'A' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        Alta
+                                    </span>
+                                {% elif ticket.severidad == 'M' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        Media
+                                    </span>
+                                {% elif ticket.severidad == 'B' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Baja
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                {{ ticket.fecha_creacion|date:"d/m/Y H:i" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                {% if ticket.usuario_asignado %}
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-8 w-8">
+                                            <div class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">
+                                                {{ ticket.usuario_asignado.first_name|first|default:ticket.usuario_asignado.username|first|upper }}
+                                            </div>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900">
+                                                {{ ticket.usuario_asignado.get_full_name|default:ticket.usuario_asignado.username }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <span class="text-gray-400 italic">Sin asignar</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            {% if tickets.has_other_pages %}
+            <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4 rounded-b-lg">
+                <div class="flex flex-1 justify-between sm:hidden">
+                    {% if tickets.has_previous %}
+                        <a href="#" onclick="window.location.href=buildPageUrl({{ tickets.previous_page_number }}); return false;" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Anterior</a>
+                    {% endif %}
+                    {% if tickets.has_next %}
+                        <a href="#" onclick="window.location.href=buildPageUrl({{ tickets.next_page_number }}); return false;" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Siguiente</a>
+                    {% endif %}
+                </div>
+                <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Mostrando
+                            <span class="font-medium">{{ tickets.start_index }}</span>
+                            a
+                            <span class="font-medium">{{ tickets.end_index }}</span>
+                            de
+                            <span class="font-medium">{{ total_tickets }}</span>
+                            resultados
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                            {% if tickets.has_previous %}
+                                <a href="#" onclick="window.location.href=buildPageUrl({{ tickets.previous_page_number }}); return false;" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
+                                    <span class="sr-only">Anterior</span>
+                                    <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
+                                    </svg>
+                                </a>
+                            {% endif %}
+                            
+                            {% for num in tickets.paginator.page_range %}
+                                {% if num == tickets.number %}
+                                    <span class="relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">{{ num }}</span>
+                                {% else %}
+                                    <a href="#" onclick="window.location.href=buildPageUrl({{ num }}); return false;" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">{{ num }}</a>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if tickets.has_next %}
+                                <a href="#" onclick="window.location.href=buildPageUrl({{ tickets.next_page_number }}); return false;" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
+                                    <span class="sr-only">Siguiente</span>
+                                    <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                                    </svg>
+                                </a>
+                            {% endif %}
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-8">
+                <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p class="text-gray-500">No se encontraron tickets con los filtros aplicados.</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Información adicional -->
+        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-blue-800">Información sobre el reporte</h3>
+                    <div class="mt-2 text-sm text-blue-700">
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li>El reporte incluirá todos los tickets que coincidan con los filtros seleccionados</li>
+                            <li>Si no seleccionas fechas, se incluirán todos los tickets</li>
+                            <li>El PDF incluye: código, tipo, estado, severidad, fecha de creación y asignado</li>
+                            <li>El archivo se descargará automáticamente al generar el reporte</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Agregar validación básica de fechas
+document.getElementById('reporteForm').addEventListener('submit', function(e) {
+    const fechaDesde = document.getElementById('fecha_desde').value;
+    const fechaHasta = document.getElementById('fecha_hasta').value;
+    
+    if (fechaDesde && fechaHasta && fechaDesde > fechaHasta) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'error',
+            title: 'Error en las fechas',
+            text: 'La fecha "desde" no puede ser mayor que la fecha "hasta"',
+            confirmButtonColor: '#667eea'
+        });
+        return false;
+    }
+    
+    // Mostrar loading
+    Swal.fire({
+        title: 'Generando reporte...',
+        text: 'Por favor espera mientras se genera el PDF',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        willOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    // Cerrar el loading después de un tiempo
+    setTimeout(() => {
+        Swal.close();
+    }, 3000);
+});
+
+// Establecer fecha máxima como hoy
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('fecha_desde').setAttribute('max', today);
+document.getElementById('fecha_hasta').setAttribute('max', today);
+
+// Función para construir URL con filtros actuales
+function buildPageUrl(pageNumber) {
+    const params = new URLSearchParams();
+    
+    // Agregar número de página
+    params.set('page', pageNumber);
+    
+    // Agregar filtros actuales si existen
+    const fechaDesde = document.getElementById('fecha_desde').value;
+    const fechaHasta = document.getElementById('fecha_hasta').value;
+    const estado = document.getElementById('estado').value;
+    const tipoSolicitud = document.getElementById('tipo_solicitud').value;
+    
+    if (fechaDesde) params.set('fecha_desde', fechaDesde);
+    if (fechaHasta) params.set('fecha_hasta', fechaHasta);
+    if (estado && estado !== 'todos') params.set('estado', estado);
+    if (tipoSolicitud && tipoSolicitud !== 'todos') params.set('tipo_solicitud', tipoSolicitud);
+    
+    // Indicar que es una búsqueda
+    params.set('accion', 'buscar');
+    
+    return '?' + params.toString();
+}
+</script>
+{% endblock %}
