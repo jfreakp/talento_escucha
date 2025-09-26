@@ -10,6 +10,7 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from tickets.models import Ticket, Agencia, TicketAuditoria
 from .decorators import require_role, user_can_manage_users, user_has_any_role
+from .forms import UserProfileForm, CustomPasswordChangeForm
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -826,3 +827,58 @@ def generar_txt_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitu
     # Escribir todo el contenido
     response.write("\n".join(lines))
     return response
+
+
+@login_required
+@user_has_any_role(['ADMIN', 'REVISOR'])
+def perfil_usuario(request):
+    """Vista para mostrar y editar el perfil del usuario"""
+    
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '¡Tu perfil ha sido actualizado exitosamente!')
+            return redirect('admin_dashboard:perfil_usuario')
+        else:
+            messages.error(request, 'Por favor corrige los errores en el formulario.')
+    else:
+        form = UserProfileForm(instance=request.user)
+    
+    # Obtener información adicional del usuario
+    user_groups = request.user.groups.all()
+    user_roles = [group.name for group in user_groups]
+    
+    context = {
+        'user': request.user,
+        'form': form,
+        'user_roles': user_roles,
+        'last_login': request.user.last_login,
+        'date_joined': request.user.date_joined,
+    }
+    
+    return render(request, 'admin_dashboard/perfil_usuario.html', context)
+
+
+@login_required
+@user_has_any_role(['ADMIN', 'REVISOR'])
+def cambiar_password(request):
+    """Vista para cambiar la contraseña del usuario"""
+    
+    if request.method == 'POST':
+        form = CustomPasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            messages.success(request, '¡Tu contraseña ha sido cambiada exitosamente!')
+            return redirect('admin_dashboard:perfil_usuario')
+        else:
+            messages.error(request, 'Por favor corrige los errores en el formulario.')
+    else:
+        form = CustomPasswordChangeForm(request.user)
+    
+    context = {
+        'user': request.user,
+        'form': form,
+    }
+    
+    return render(request, 'admin_dashboard/cambiar_password.html', context)

@@ -15,6 +15,36 @@
         @supports (font-variation-settings: normal) {
             :root { font-family: 'Inter var', sans-serif; }
         }
+        
+        /* Estilos globales para inputs - Forzar texto negro */
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        textarea,
+        select {
+            color: #1a202c !important;
+        }
+        
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        textarea:focus,
+        select:focus {
+            color: #1a202c !important;
+        }
+        
+        /* Específico para campos de formulario de perfil */
+        .form-input,
+        input.form-input {
+            color: #1a202c !important;
+            background-color: #ffffff !important;
+        }
+        
+        /* Override de Tailwind para inputs */
+        .text-slate-300 input,
+        .text-slate-300 textarea {
+            color: #1a202c !important;
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -316,6 +346,23 @@
            
            <!-- Bottom Section: Logout -->
            <div class="p-6 border-t border-slate-700">
+            <!-- Perfil de Usuario - Solo para ADMIN y REVISOR -->
+                {% if user|has_role:'ADMIN' or user|has_role:'REVISOR' %}
+                    <div class="mt-6 pt-4 border-t border-slate-700">
+                        <a href="{% url 'admin_dashboard:perfil_usuario' %}" 
+                           class="w-full px-2 inline-flex space-x-2 items-center border-b border-slate-700 py-3 hover:bg-white/5 transition ease-linear duration-150 {% if request.resolver_match.url_name == 'perfil_usuario' or request.resolver_match.url_name == 'cambiar_password' %}bg-blue-800{% endif %}">
+                            <div>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 {% if request.resolver_match.url_name == 'perfil_usuario' or request.resolver_match.url_name == 'cambiar_password' %}text-white{% endif %}">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-lg font-bold leading-5 {% if request.resolver_match.url_name == 'perfil_usuario' or request.resolver_match.url_name == 'cambiar_password' %}text-white{% else %}text-slate-300{% endif %}">Mi Perfil</span>
+                                <span class="text-sm {% if request.resolver_match.url_name == 'perfil_usuario' or request.resolver_match.url_name == 'cambiar_password' %}text-white/50{% else %}text-slate-500{% endif %} hidden md:block">Información personal</span>
+                            </div>
+                        </a>
+                    </div>
+                {% endif %}
             <a href="{% url 'auth_app:logout' %}" class="w-full px-2 inline-flex space-x-2 items-center py-3 hover:bg-white/5 transition ease-linear duration-150 rounded-lg">
                 <div>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">

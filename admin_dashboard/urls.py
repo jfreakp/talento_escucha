@@ -21,4 +21,7 @@ urlpatterns = [
     path('tickets/resolver/<int:ticket_id>/', views.resolver_ticket, name='resolver_ticket'),
     # URLs para reportería
     path('reportes/tickets/', views.reporte_tickets, name='reporte_tickets'),
+    # URLs para perfil de usuario
+    path('perfil/', views.perfil_usuario, name='perfil_usuario'),
+    path('perfil/cambiar-password/', views.cambiar_password, name='cambiar_password'),
 ]
