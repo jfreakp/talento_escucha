@@ -21,6 +21,14 @@ class Agencia(models.Model):
         help_text="Nombre completo de la empresa o agencia"
     )
     
+    provincia = models.CharField(
+        max_length=100,
+        verbose_name="Provincia",
+        help_text="Provincia donde se ubica la agencia",
+        blank=True,
+        null=True
+    )
+    
     # Campos de auditoría
     usuario_creacion = models.ForeignKey(
         User,
@@ -57,6 +65,7 @@ class Agencia(models.Model):
         indexes = [
             models.Index(fields=['codigo_faces']),
             models.Index(fields=['nombre']),
+            models.Index(fields=['provincia']),
         ]
     
     def __str__(self):

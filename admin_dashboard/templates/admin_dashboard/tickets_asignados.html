@@ -21,7 +21,7 @@
                 <div class="ml-5 w-0 flex-1">
                     <dl>
                         <dt class="text-sm font-medium text-blue-700 truncate">Total Asignados</dt>
-                        <dd class="text-lg font-medium text-blue-900">{{ tickets.count }}</dd>
+                        <dd class="text-lg font-medium text-blue-900">{{ total_tickets }}</dd>
                     </dl>
                 </div>
             </div>
@@ -38,10 +38,26 @@
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-yellow-700 truncate">En Proceso</dt>
-                        <dd class="text-lg font-medium text-yellow-900">
-                            {{ tickets|length }}
-                        </dd>
+                        <dt class="text-sm font-medium text-yellow-700 truncate">Pendientes</dt>
+                        <dd class="text-lg font-medium text-yellow-900">{{ stats.pendiente }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-orange-50 overflow-hidden shadow rounded-lg">
+        <div class="p-5">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <svg class="h-6 w-6 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-orange-700 truncate">En Proceso</dt>
+                        <dd class="text-lg font-medium text-orange-900">{{ stats.en_proceso }}</dd>
                     </dl>
                 </div>
             </div>
@@ -58,26 +74,8 @@
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-green-700 truncate">Completados</dt>
-                        <dd class="text-lg font-medium text-green-900">0</dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-red-50 overflow-hidden shadow rounded-lg">
-        <div class="p-5">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <svg class="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.864-.833-2.634 0L3.118 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                    </svg>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-red-700 truncate">Vencidos</dt>
-                        <dd class="text-lg font-medium text-red-900">0</dd>
+                        <dt class="text-sm font-medium text-green-700 truncate">Resueltos</dt>
+                        <dd class="text-lg font-medium text-green-900">{{ stats.resuelto }}</dd>
                     </dl>
                 </div>
             </div>
@@ -190,6 +188,70 @@
         </div>
     {% endif %}
 </div>
+
+<!-- Paginación -->
+{% if tickets.has_other_pages %}
+<div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-6">
+    <div class="flex-1 flex justify-between sm:hidden">
+        {% if tickets.has_previous %}
+            <a href="?page={{ tickets.previous_page_number }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                Anterior
+            </a>
+        {% endif %}
+        {% if tickets.has_next %}
+            <a href="?page={{ tickets.next_page_number }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                Siguiente
+            </a>
+        {% endif %}
+    </div>
+    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+        <div>
+            <p class="text-sm text-gray-700">
+                Mostrando
+                <span class="font-medium">{{ tickets.start_index }}</span>
+                a
+                <span class="font-medium">{{ tickets.end_index }}</span>
+                de
+                <span class="font-medium">{{ total_tickets }}</span>
+                resultados
+            </p>
+        </div>
+        <div>
+            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                {% if tickets.has_previous %}
+                    <a href="?page={{ tickets.previous_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                        <span class="sr-only">Anterior</span>
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                {% endif %}
+
+                {% for num in tickets.paginator.page_range %}
+                    {% if tickets.number == num %}
+                        <span aria-current="page" class="bg-blue-50 border-blue-500 text-blue-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                            {{ num }}
+                        </span>
+                    {% elif num > tickets.number|add:'-3' and num < tickets.number|add:'3' %}
+                        <a href="?page={{ num }}" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                            {{ num }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if tickets.has_next %}
+                    <a href="?page={{ tickets.next_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                        <span class="sr-only">Siguiente</span>
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                {% endif %}
+            </nav>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 
 

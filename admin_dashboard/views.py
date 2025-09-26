@@ -33,6 +33,13 @@ def dashboard_view(request):
     total_usuarios = User.objects.count()
     total_agencias = Agencia.objects.count()
     
+    # Estadísticas por estado
+    tickets_pendientes = Ticket.objects.filter(estado='pendiente').count()
+    tickets_en_proceso = Ticket.objects.filter(estado='en_proceso').count()
+    tickets_resueltos = Ticket.objects.filter(estado='resuelto').count()
+    tickets_cerrados = Ticket.objects.filter(estado='cerrado').count()
+    tickets_cancelados = Ticket.objects.filter(estado='cancelado').count()
+    
     # Estadísticas por tipo de petición
     peticiones = Ticket.objects.filter(tipo_solicitud='P').count()
     quejas = Ticket.objects.filter(tipo_solicitud='Q').count()
@@ -44,6 +51,22 @@ def dashboard_view(request):
     severidad_media = Ticket.objects.filter(severidad='M').count()
     severidad_baja = Ticket.objects.filter(severidad='B').count()
     
+    # Estadísticas por agencia (top 6)
+    from django.db.models import Count
+    tickets_por_agencia = Ticket.objects.values('agencia__nombre').annotate(
+        count=Count('id')
+    ).order_by('-count')[:6]
+    
+    # Tickets nuevos del día
+    from datetime import date
+    tickets_hoy = Ticket.objects.filter(fecha_creacion__date=date.today()).count()
+    
+    # Estadísticas de anonimato
+    # Tickets de usuarios registrados (tienen usuario_crea)
+    tickets_registrados = Ticket.objects.filter(usuario_crea__isnull=False).count()
+    # Tickets anónimos (no tienen usuario_crea)
+    tickets_anonimos = Ticket.objects.filter(usuario_crea__isnull=True).count()
+    
     # Últimos tickets creados
     ultimos_tickets = Ticket.objects.order_by('-fecha_creacion')[:5]
     
@@ -51,13 +74,29 @@ def dashboard_view(request):
         'total_tickets': total_tickets,
         'total_usuarios': total_usuarios,
         'total_agencias': total_agencias,
+        # Estadísticas por estado
+        'tickets_pendientes': tickets_pendientes,
+        'tickets_en_proceso': tickets_en_proceso,
+        'tickets_resueltos': tickets_resueltos,
+        'tickets_cerrados': tickets_cerrados,
+        'tickets_cancelados': tickets_cancelados,
+        # Estadísticas por tipo
         'peticiones': peticiones,
         'quejas': quejas,
         'reclamos': reclamos,
         'solicitudes': solicitudes,
+        # Estadísticas por severidad
         'severidad_alta': severidad_alta,
         'severidad_media': severidad_media,
         'severidad_baja': severidad_baja,
+        # Estadísticas adicionales
+        'tickets_por_agencia': tickets_por_agencia,
+        'agencias_top': tickets_por_agencia[:6],  # Top 6 agencias
+        'agencias_max': tickets_por_agencia[0]['count'] if tickets_por_agencia else 1,  # Para calcular porcentajes
+        'tickets_hoy': tickets_hoy,
+        # Estadísticas de anonimato
+        'tickets_registrados': tickets_registrados,
+        'tickets_anonimos': tickets_anonimos,
         'ultimos_tickets': ultimos_tickets,
         'user': request.user,
     }
@@ -312,14 +351,31 @@ def tickets_pendientes(request):
         return redirect('admin_dashboard:dashboard')
     
     # Obtener tickets sin asignar (sin usuario_asignado)
-    tickets = Ticket.objects.filter(
+    tickets_list = Ticket.objects.filter(
         usuario_asignado__isnull=True
     ).order_by('-fecha_creacion')
+    
+    # Calcular estadísticas por estado de tickets sin asignar
+    stats = {
+        'total': tickets_list.count(),
+        'pendiente': tickets_list.filter(estado='pendiente').count(),
+        'en_proceso': tickets_list.filter(estado='en_proceso').count(),
+        'resuelto': tickets_list.filter(estado='resuelto').count(),
+        'cerrado': tickets_list.filter(estado='cerrado').count(),
+        'cancelado': tickets_list.filter(estado='cancelado').count(),
+    }
+    
+    # Implementar paginación
+    paginator = Paginator(tickets_list, 10)  # 10 tickets por página
+    page_number = request.GET.get('page')
+    tickets = paginator.get_page(page_number)
     
     context = {
         'tickets': tickets,
         'page_title': 'Tickets Pendientes',
-        'page_description': 'Lista de tickets sin asignar'
+        'page_description': 'Lista de tickets sin asignar',
+        'total_tickets': stats['total'],
+        'stats': stats,
     }
     
     return render(request, 'admin_dashboard/tickets_pendientes.html', context)
@@ -334,14 +390,31 @@ def tickets_asignados(request):
         return redirect('admin_dashboard:dashboard')
     
     # Obtener tickets asignados al usuario actual
-    tickets = Ticket.objects.filter(
+    tickets_list = Ticket.objects.filter(
         usuario_asignado=request.user
     ).order_by('-fecha_creacion')
+    
+    # Calcular estadísticas por estado
+    stats = {
+        'total': tickets_list.count(),
+        'pendiente': tickets_list.filter(estado='pendiente').count(),
+        'en_proceso': tickets_list.filter(estado='en_proceso').count(),
+        'resuelto': tickets_list.filter(estado='resuelto').count(),
+        'cerrado': tickets_list.filter(estado='cerrado').count(),
+        'cancelado': tickets_list.filter(estado='cancelado').count(),
+    }
+    
+    # Implementar paginación
+    paginator = Paginator(tickets_list, 10)  # 10 tickets por página
+    page_number = request.GET.get('page')
+    tickets = paginator.get_page(page_number)
     
     context = {
         'tickets': tickets,
         'page_title': 'Mis Tickets',
-        'page_description': 'Lista de tickets asignados a mí'
+        'page_description': 'Lista de tickets asignados a mí',
+        'total_tickets': stats['total'],
+        'stats': stats,
     }
     
     return render(request, 'admin_dashboard/tickets_asignados.html', context)
@@ -466,7 +539,7 @@ def reporte_tickets(request):
     """Vista para generar reportes de tickets en PDF"""
     
     # Función auxiliar para aplicar filtros
-    def aplicar_filtros(query, fecha_desde, fecha_hasta, estado, tipo_solicitud):
+    def aplicar_filtros(query, fecha_desde, fecha_hasta, estado, tipo_solicitud, agencia):
         if fecha_desde:
             try:
                 fecha_desde_obj = datetime.datetime.strptime(fecha_desde, '%Y-%m-%d').date()
@@ -487,6 +560,9 @@ def reporte_tickets(request):
         if tipo_solicitud and tipo_solicitud != 'todos':
             query = query.filter(tipo_solicitud=tipo_solicitud)
         
+        if agencia and agencia != 'todas':
+            query = query.filter(agencia_id=agencia)
+        
         return query.order_by('-fecha_creacion')
     
     # Obtener filtros de POST o GET (para paginación)
@@ -497,27 +573,29 @@ def reporte_tickets(request):
             fecha_hasta = request.POST.get('fecha_hasta')
             estado = request.POST.get('estado')
             tipo_solicitud = request.POST.get('tipo_solicitud')
+            agencia = request.POST.get('agencia')
             accion = request.POST.get('accion', 'buscar')
         else:  # GET con parámetros de búsqueda
             fecha_desde = request.GET.get('fecha_desde')
             fecha_hasta = request.GET.get('fecha_hasta')
             estado = request.GET.get('estado')
             tipo_solicitud = request.GET.get('tipo_solicitud')
+            agencia = request.GET.get('agencia')
             accion = request.GET.get('accion', 'buscar')
         
         # Construir queryset base
         tickets_query = Ticket.objects.all()
         
         # Aplicar filtros
-        tickets = aplicar_filtros(tickets_query, fecha_desde, fecha_hasta, estado, tipo_solicitud)
+        tickets = aplicar_filtros(tickets_query, fecha_desde, fecha_hasta, estado, tipo_solicitud, agencia)
         
         # Manejar diferentes tipos de descarga
         if accion == 'descargar':
-            return generar_pdf_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitud)
+            return generar_pdf_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitud, agencia)
         elif accion == 'descargar_excel':
-            return generar_excel_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitud)
+            return generar_excel_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitud, agencia)
         elif accion == 'descargar_txt':
-            return generar_txt_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitud)
+            return generar_txt_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitud, agencia)
         
         # Si la acción es buscar, mostrar resultados en pantalla
         else:
@@ -532,12 +610,14 @@ def reporte_tickets(request):
                 'fecha_hasta': fecha_hasta,
                 'estado': estado,
                 'tipo_solicitud': tipo_solicitud,
+                'agencia': agencia,
             }
             
             context = {
                 'user': request.user,
                 'estados_choices': Ticket.ESTADO_CHOICES,
                 'tipos_choices': Ticket.TIPO_SOLICITUD_CHOICES,
+                'agencias': Agencia.objects.all().order_by('nombre'),
                 'tickets': page_obj,
                 'total_tickets': tickets.count(),
                 'filtros_aplicados': filtros_aplicados,
@@ -551,13 +631,14 @@ def reporte_tickets(request):
         'user': request.user,
         'estados_choices': Ticket.ESTADO_CHOICES,
         'tipos_choices': Ticket.TIPO_SOLICITUD_CHOICES,
+        'agencias': Agencia.objects.all().order_by('nombre'),
         'mostrar_resultados': False,
     }
     
     return render(request, 'admin_dashboard/reporte_tickets.html', context)
 
 
-def generar_pdf_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitud):
+def generar_pdf_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitud, agencia=None):
     """Función auxiliar para generar el PDF del reporte"""
     
     # Generar PDF
@@ -606,6 +687,12 @@ def generar_pdf_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitu
     if tipo_solicitud and tipo_solicitud != 'todos':
         tipo_display = dict(Ticket.TIPO_SOLICITUD_CHOICES).get(tipo_solicitud, tipo_solicitud)
         filtros_info.append(f"Tipo: {tipo_display}")
+    if agencia and agencia != 'todas':
+        try:
+            agencia_obj = Agencia.objects.get(id=agencia)
+            filtros_info.append(f"Agencia: {agencia_obj.nombre}")
+        except Agencia.DoesNotExist:
+            pass
     
     if filtros_info:
         filtros_text = " | ".join(filtros_info)
@@ -672,7 +759,7 @@ def generar_pdf_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitu
     return response
 
 
-def generar_excel_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitud):
+def generar_excel_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitud, agencia=None):
     """Genera un reporte de tickets en formato Excel"""
     
     # Crear workbook y hoja
@@ -761,7 +848,7 @@ def generar_excel_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solici
     return response
 
 
-def generar_txt_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitud):
+def generar_txt_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitud, agencia=None):
     """Genera un reporte de tickets en formato de texto separado por tabuladores"""
     
     response = HttpResponse(content_type='text/plain; charset=utf-8')

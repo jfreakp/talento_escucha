@@ -37,16 +37,16 @@
     <!-- Estadísticas Principales (solo para REVISOR, SUPERUSER y USER) -->
     {% else %}
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-        <!-- Atenciones -->
+        <!-- Total Tickets -->
         <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-lg p-6 text-white relative overflow-hidden">
             <div class="relative z-10">
-                <p class="text-red-100 text-sm font-medium uppercase">ATENCIONES</p>
-                <p class="text-4xl font-bold mb-2">2,643</p>
+                <p class="text-red-100 text-sm font-medium uppercase">TICKETS RESUELTOS</p>
+                <p class="text-4xl font-bold mb-2">{{ tickets_resueltos }}</p>
                 <div class="flex items-center text-red-100">
                     <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
                     </svg>
-                    <span class="text-sm">1.3% desde la semana pasada</span>
+                    <span class="text-sm">Estado actualizado</span>
                 </div>
             </div>
             <!-- Mini gráfico decorativo -->
@@ -58,16 +58,16 @@
             </div>
         </div>
 
-        <!-- Visitas -->
+        <!-- Tickets Nuevos -->
         <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-lg p-6 text-white relative overflow-hidden">
             <div class="relative z-10">
-                <p class="text-red-100 text-sm font-medium uppercase">VISITAS</p>
-                <p class="text-4xl font-bold mb-2">2,643</p>
+                <p class="text-red-100 text-sm font-medium uppercase">TICKETS NUEVOS</p>
+                <p class="text-4xl font-bold mb-2">{{ tickets_hoy }}</p>
                 <div class="flex items-center text-red-100">
                     <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
                     </svg>
-                    <span class="text-sm">1.3% desde la semana pasada</span>
+                    <span class="text-sm">Hoy {{ "now"|date:"d/m/Y" }}</span>
                 </div>
             </div>
             <!-- Mini gráfico decorativo -->
@@ -101,35 +101,47 @@
         <!-- Gráfico de Tipos (Dona) -->
         <div class="bg-gray-100 rounded-lg p-6">
             <div class="flex justify-between items-center mb-2">
-                <h3 class="text-gray-600 text-sm font-medium uppercase">Tipo</h3>
-                <span class="text-xs text-gray-500">1.32% otros géneros</span>
+                <h3 class="text-gray-600 text-sm font-medium uppercase">Tipo de Solicitud</h3>
+                <span class="text-xs text-gray-500">{{ total_tickets }} total</span>
             </div>
             <div class="flex items-center justify-center mb-4">
-                <!-- Gráfico de dona simple -->
-                <div class="relative w-24 h-24">
-                    <svg class="w-24 h-24 transform -rotate-90" viewBox="0 0 36 36">
-                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
-                              fill="none" stroke="#e5e7eb" stroke-width="2"/>
-                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
-                              fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="60, 40" stroke-linecap="round"/>
-                    </svg>
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <span class="text-xs text-gray-600 font-medium">60%</span>
+                <!-- Gráfico de dona con Canvas -->
+                <div class="relative">
+                    <canvas id="tiposSolicitudChart" width="120" height="120" class="max-w-none"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <span class="text-sm font-bold text-gray-900">{{ total_tickets }}</span>
+                        <span class="text-xs text-gray-500">Total</span>
                     </div>
                 </div>
             </div>
             <div class="space-y-2 text-sm">
-                <div class="flex items-center">
-                    <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-                    <span class="text-gray-700">Reclamos</span>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                        <span class="text-gray-700">Reclamos</span>
+                    </div>
+                    <span class="font-semibold text-gray-900">{{ reclamos }}</span>
                 </div>
-                <div class="flex items-center">
-                    <div class="w-3 h-3 bg-gray-300 rounded-full mr-2"></div>
-                    <span class="text-gray-700">Peticiones</span>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                        <span class="text-gray-700">Peticiones</span>
+                    </div>
+                    <span class="font-semibold text-gray-900">{{ peticiones }}</span>
                 </div>
-                <div class="flex items-center">
-                    <div class="w-3 h-3 bg-gray-400 rounded-full mr-2"></div>
-                    <span class="text-gray-700">Quejas</span>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
+                        <span class="text-gray-700">Quejas</span>
+                    </div>
+                    <span class="font-semibold text-gray-900">{{ quejas }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
+                        <span class="text-gray-700">Solicitudes</span>
+                    </div>
+                    <span class="font-semibold text-gray-900">{{ solicitudes }}</span>
                 </div>
             </div>
         </div>
@@ -143,91 +155,109 @@
             <div class="space-y-3">
                 <div class="flex justify-between items-center">
                     <span class="text-gray-700 font-medium">Usuarios Registrados</span>
-                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-semibold">25</span>
+                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-semibold">{{ tickets_registrados }}</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="text-gray-700 font-medium">Anónimos</span>
-                    <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-sm font-semibold">10</span>
+                    <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-sm font-semibold">{{ tickets_anonimos }}</span>
                 </div>
+                {% if total_tickets > 0 %}
+                <div class="mt-3 pt-3 border-t border-gray-300">
+                    <div class="flex justify-between text-xs text-gray-600">
+                        <span>{% widthratio tickets_registrados total_tickets 100 %}% Registrados</span>
+                        <span>{% widthratio tickets_anonimos total_tickets 100 %}% Anónimos</span>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
 
-        <!-- Gráfico de Barras - Tickets por Agencia -->
+        <!-- Gráfico de Barras Verticales - Tickets por Agencia -->
         <div class="bg-gray-100 rounded-lg p-6 lg:col-span-2">
-            <h3 class="text-gray-600 text-sm font-medium uppercase mb-4">Tickets por Agencia</h3>
-            <div class="space-y-3">
-                <div class="flex items-center">
-                    <span class="w-16 text-xs text-gray-600 font-medium">ZUMA</span>
-                    <div class="flex-1 mx-3">
-                        <div class="h-8 bg-gray-200 rounded">
-                            <div class="h-8 bg-red-500 rounded" style="width: 45%"></div>
+            <h3 class="text-gray-600 text-sm font-medium uppercase mb-4">Tickets por Agencia (Top 6)</h3>
+            <div class="h-48 flex items-end justify-center space-x-4 px-4">
+                {% for agencia in agencias_top %}
+                {% if agencia.count > 0 %}
+                    {% widthratio agencia.count agencias_max 100 as pct %}
+                    {% widthratio pct 100 160 as altura %}
+                    <div class="flex flex-col items-center space-y-2">
+                        <!-- Barra vertical -->
+                        <div class="flex flex-col items-center">
+                            <span class="text-xs font-bold text-gray-900 mb-1">{{ agencia.count }}</span>
+                            <div class="w-8 bg-gray-200 rounded-t flex flex-col justify-end" style="height: 160px;">
+                                <div class="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t transition-all duration-500 flex items-end justify-center" style="height: {{ altura }}px;">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Etiqueta de agencia -->
+                        <div class="text-center">
+                            <span class="text-xs text-gray-600 font-medium transform -rotate-45 block whitespace-nowrap" style="writing-mode: vertical-rl;">
+                                {{ agencia.agencia__nombre|upper|truncatechars:10|default:"N/A" }}
+                            </span>
                         </div>
                     </div>
-                    <div class="h-8 bg-gray-400 rounded" style="width: 35%"></div>
-                </div>
-                <div class="flex items-center">
-                    <span class="w-16 text-xs text-gray-600 font-medium">GUAYTAR</span>
-                    <div class="flex-1 mx-3">
-                        <div class="h-8 bg-gray-200 rounded">
-                            <div class="h-8 bg-red-500 rounded" style="width: 35%"></div>
-                        </div>
+                {% endif %}
+                {% empty %}
+                    <div class="text-center text-gray-500 py-8">
+                        <p>No hay datos de agencias disponibles</p>
                     </div>
-                    <div class="h-8 bg-gray-400 rounded" style="width: 25%"></div>
-                </div>
-                <div class="flex items-center">
-                    <span class="w-16 text-xs text-gray-600 font-medium">YACUANQ</span>
-                    <div class="flex-1 mx-3">
-                        <div class="h-8 bg-gray-200 rounded">
-                            <div class="h-8 bg-red-500 rounded" style="width: 85%"></div>
-                        </div>
-                    </div>
-                    <div class="h-8 bg-gray-400 rounded" style="width: 55%"></div>
-                </div>
-                <div class="flex items-center">
-                    <span class="w-16 text-xs text-gray-600 font-medium">PALANCA</span>
-                    <div class="flex-1 mx-3">
-                        <div class="h-8 bg-gray-200 rounded">
-                            <div class="h-8 bg-red-500 rounded" style="width: 55%"></div>
-                        </div>
-                    </div>
-                    <div class="h-8 bg-gray-400 rounded" style="width: 45%"></div>
-                </div>
-                <div class="flex items-center">
-                    <span class="w-16 text-xs text-gray-600 font-medium">VALPARAISO</span>
-                    <div class="flex-1 mx-3">
-                        <div class="h-8 bg-gray-200 rounded">
-                            <div class="h-8 bg-red-500 rounded" style="width: 65%"></div>
-                        </div>
-                    </div>
-                    <div class="h-8 bg-gray-400 rounded" style="width: 55%"></div>
-                </div>
-                <div class="flex items-center">
-                    <span class="w-16 text-xs text-gray-600 font-medium">PASQUIRA</span>
-                    <div class="flex-1 mx-3">
-                        <div class="h-8 bg-gray-200 rounded">
-                            <div class="h-8 bg-red-500 rounded" style="width: 75%"></div>
-                        </div>
-                    </div>
-                    <div class="h-8 bg-gray-400 rounded" style="width: 45%"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Lista de Temas -->
-        <div class="bg-gray-100 rounded-lg p-6">
-            <h3 class="text-gray-600 text-sm font-medium uppercase mb-4">TEMAS</h3>
-            <div class="space-y-2">
-                <div class="bg-red-500 text-white px-3 py-2 rounded text-sm font-medium">MEJORAMIENTO DE INFRAESTRUCTURA</div>
-                <div class="bg-red-500 text-white px-3 py-2 rounded text-sm font-medium">AGUA</div>
-                <div class="bg-red-500 text-white px-3 py-2 rounded text-sm font-medium">DETERIORO</div>
-                <div class="bg-red-500 text-white px-3 py-2 rounded text-sm font-medium">SOCIAL</div>
-                <div class="bg-red-500 text-white px-3 py-2 rounded text-sm font-medium">INSEGURIDAD</div>
+                {% endfor %}
             </div>
         </div>
     </div>
     {% endif %}
 
     <script>
+    // Gráfico de dona para tipos de solicitud
+    function drawDonutChart() {
+        const canvas = document.getElementById('tiposSolicitudChart');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = 45;
+        const innerRadius = 25;
+        
+        // Datos del template
+        const data = [
+            { label: 'Reclamos', value: {{ reclamos|default:0 }}, color: '#ef4444' },
+            { label: 'Peticiones', value: {{ peticiones|default:0 }}, color: '#10b981' },
+            { label: 'Quejas', value: {{ quejas|default:0 }}, color: '#f59e0b' },
+            { label: 'Solicitudes', value: {{ solicitudes|default:0 }}, color: '#8b5cf6' }
+        ];
+        
+        const total = data.reduce((sum, item) => sum + item.value, 0);
+        
+        if (total === 0) {
+            // Dibujar círculo vacío si no hay datos
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#e5e7eb';
+            ctx.lineWidth = 8;
+            ctx.stroke();
+            return;
+        }
+        
+        let currentAngle = -Math.PI / 2; // Empezar desde arriba
+        
+        data.forEach(item => {
+            if (item.value > 0) {
+                const sliceAngle = (item.value / total) * 2 * Math.PI;
+                
+                // Dibujar segmento
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+                ctx.arc(centerX, centerY, innerRadius, currentAngle + sliceAngle, currentAngle, true);
+                ctx.closePath();
+                ctx.fillStyle = item.color;
+                ctx.fill();
+                
+                currentAngle += sliceAngle;
+            }
+        });
+    }
+    
     function toggleDropdown(dropdownId) {
         const dropdown = document.getElementById(dropdownId);
         const arrow = document.getElementById(dropdownId.replace('Dropdown', 'Arrow'));
@@ -240,5 +270,10 @@
             arrow.style.transform = 'rotate(0deg)';
         }
     }
+    
+    // Inicializar gráfico cuando carge la página
+    document.addEventListener('DOMContentLoaded', function() {
+        drawDonutChart();
+    });
     </script>
 {% endblock %}
