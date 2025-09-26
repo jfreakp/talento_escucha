@@ -38,42 +38,42 @@
         </div>
 
         <!-- Formulario de Filtros -->
-        <div class="form-container p-4 mb-6 max-w-4xl">
+        <div class="form-container p-4 mb-6 max-w-sm">
             <form method="post" id="reporteForm">
                 {% csrf_token %}
                 
-                <div class="filter-section p-3 mb-3">
-                    <div class="flex flex-wrap items-end gap-4">
+                <div class="filter-section p-4 mb-4">
+                    <div class="space-y-3 max-w-xs">
                         <!-- Fecha Desde -->
-                        <div class="flex-shrink-0">
-                            <label for="fecha_desde" class="block text-xs font-medium text-gray-700 mb-1">
+                        <div>
+                            <label for="fecha_desde" class="block text-sm font-medium text-gray-700 mb-1">
                                 Desde:
                             </label>
                             <input type="date" 
                                    id="fecha_desde" 
                                    name="fecha_desde" 
-                                   class="px-2 py-1 text-sm text-black border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                   class="w-full px-3 py-2 text-sm text-black border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         
                         <!-- Fecha Hasta -->
-                        <div class="flex-shrink-0">
-                            <label for="fecha_hasta" class="block text-xs font-medium text-gray-700 mb-1">
+                        <div>
+                            <label for="fecha_hasta" class="block text-sm font-medium text-gray-700 mb-1">
                                 Hasta:
                             </label>
                             <input type="date" 
                                    id="fecha_hasta" 
                                    name="fecha_hasta" 
-                                   class="px-2 py-1 text-sm text-black border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                   class="w-full px-3 py-2 text-sm text-black border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         
                         <!-- Estado -->
-                        <div class="flex-shrink-0">
-                            <label for="estado" class="block text-xs font-medium text-gray-700 mb-1">
+                        <div>
+                            <label for="estado" class="block text-sm font-medium text-gray-700 mb-1">
                                 Estado:
                             </label>
                             <select id="estado" 
                                     name="estado" 
-                                    class="px-2 py-1 text-sm text-black border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                    class="w-full px-3 py-2 text-sm text-black border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                                 <option value="todos">Todos los estados</option>
                                 {% for estado_value, estado_display in estados_choices %}
                                 <option value="{{ estado_value }}">{{ estado_display }}</option>
@@ -82,13 +82,13 @@
                         </div>
                         
                         <!-- Tipo de Solicitud -->
-                        <div class="flex-shrink-0">
-                            <label for="tipo_solicitud" class="block text-xs font-medium text-gray-700 mb-1">
+                        <div>
+                            <label for="tipo_solicitud" class="block text-sm font-medium text-gray-700 mb-1">
                                 Tipo Solicitud:
                             </label>
                             <select id="tipo_solicitud" 
                                     name="tipo_solicitud" 
-                                    class="px-2 py-1 text-sm text-black border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                                    class="w-full px-3 py-2 text-sm text-black border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                                 <option value="todos">Todos los tipos</option>
                                 {% for tipo_value, tipo_display in tipos_choices %}
                                 <option value="{{ tipo_value }}">{{ tipo_display }}</option>
@@ -96,24 +96,51 @@
                             </select>
                         </div>
                         
-                        <!-- Botones -->
-                        <div class="flex items-end space-x-2">
+                        <!-- Botón Buscar -->
+                        <div>
                             <button type="submit" 
                                     name="accion" 
                                     value="buscar"
-                                    class="px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition duration-200">
+                                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition duration-200">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
                                 Buscar
                             </button>
-                            
-                            {% if mostrar_resultados %}
-                            <button type="submit" 
-                                    name="accion" 
-                                    value="descargar"
-                                    class="px-3 py-1 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition duration-200">
-                                Descargar PDF
-                            </button>
-                            {% endif %}
                         </div>
+                        
+                        <!-- Sección de Descarga -->
+                        {% if mostrar_resultados %}
+                        <div class="pt-2 border-t border-gray-200">
+                            <!-- Selector de formato -->
+                            <div class="mb-2">
+                                <label for="formato_descarga" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Formato de descarga:
+                                </label>
+                                <select id="formato_descarga" 
+                                        name="formato_descarga" 
+                                        class="w-full px-3 py-2 text-sm text-black border border-gray-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500">
+                                    <option value="descargar">PDF</option>
+                                    <option value="descargar_excel">Excel</option>
+                                    <option value="descargar_txt">TXT</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Botón de descarga -->
+                            <div>
+                                <button type="submit" 
+                                        name="accion" 
+                                        value="descargar"
+                                        id="btn_descargar"
+                                        class="w-full inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition duration-200">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    Descargar Reporte
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </form>
@@ -342,11 +369,13 @@
 </div>
 
 <script>
-// Agregar validación básica de fechas
+// Agregar validación básica de fechas y manejo de descargas
 document.getElementById('reporteForm').addEventListener('submit', function(e) {
     const fechaDesde = document.getElementById('fecha_desde').value;
     const fechaHasta = document.getElementById('fecha_hasta').value;
+    const accion = e.submitter ? e.submitter.value : 'buscar';
     
+    // Validar fechas
     if (fechaDesde && fechaHasta && fechaDesde > fechaHasta) {
         e.preventDefault();
         Swal.fire({
@@ -358,21 +387,57 @@ document.getElementById('reporteForm').addEventListener('submit', function(e) {
         return false;
     }
     
-    // Mostrar loading
-    Swal.fire({
-        title: 'Generando reporte...',
-        text: 'Por favor espera mientras se genera el PDF',
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        willOpen: () => {
-            Swal.showLoading();
+    // Si es descarga, cambiar la acción según el formato seleccionado
+    if (accion === 'descargar') {
+        const formatoSelect = document.getElementById('formato_descarga');
+        if (formatoSelect) {
+            const formatoSeleccionado = formatoSelect.value;
+            e.submitter.value = formatoSeleccionado;
+            
+            // Mostrar mensaje según el formato
+            if (formatoSeleccionado === 'descargar') {
+                mostrarMensajeDescarga('PDF');
+            } else if (formatoSeleccionado === 'descargar_excel') {
+                mostrarMensajeDescarga('Excel');
+            } else if (formatoSeleccionado === 'descargar_txt') {
+                mostrarMensajeDescarga('TXT');
+            }
         }
-    });
+    } else if (accion === 'buscar') {
+        // Mostrar loading para búsqueda
+        Swal.fire({
+            title: 'Buscando tickets...',
+            text: 'Por favor espera mientras se cargan los resultados',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        
+        setTimeout(() => {
+            Swal.close();
+        }, 2000);
+    }
+});
+
+// Actualizar el texto del botón según el formato seleccionado
+document.addEventListener('DOMContentLoaded', function() {
+    const formatoSelect = document.getElementById('formato_descarga');
+    const btnDescargar = document.getElementById('btn_descargar');
     
-    // Cerrar el loading después de un tiempo
-    setTimeout(() => {
-        Swal.close();
-    }, 3000);
+    if (formatoSelect && btnDescargar) {
+        formatoSelect.addEventListener('change', function() {
+            const formato = this.value;
+            const textoFormato = this.options[this.selectedIndex].text;
+            
+            // Actualizar el texto del botón
+            const iconoSvg = btnDescargar.querySelector('svg');
+            btnDescargar.innerHTML = '';
+            btnDescargar.appendChild(iconoSvg.cloneNode(true));
+            btnDescargar.appendChild(document.createTextNode(`Descargar ${textoFormato}`));
+        });
+    }
 });
 
 // Establecer fecha máxima como hoy
@@ -402,6 +467,24 @@ function buildPageUrl(pageNumber) {
     params.set('accion', 'buscar');
     
     return '?' + params.toString();
+}
+
+// Función para mostrar mensaje de descarga
+function mostrarMensajeDescarga(tipo) {
+    Swal.fire({
+        title: `Generando reporte ${tipo.toUpperCase()}...`,
+        text: 'Por favor espera mientras se genera el archivo',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        willOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    // Cerrar el loading después de un tiempo
+    setTimeout(() => {
+        Swal.close();
+    }, 3000);
 }
 </script>
 {% endblock %}

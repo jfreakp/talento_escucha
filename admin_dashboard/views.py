@@ -18,6 +18,10 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.platypus.flowables import PageBreak
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 import datetime
+import csv
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.utils import get_column_letter
 
 
 @login_required
@@ -506,9 +510,13 @@ def reporte_tickets(request):
         # Aplicar filtros
         tickets = aplicar_filtros(tickets_query, fecha_desde, fecha_hasta, estado, tipo_solicitud)
         
-        # Si la acción es descargar PDF
+        # Manejar diferentes tipos de descarga
         if accion == 'descargar':
             return generar_pdf_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitud)
+        elif accion == 'descargar_excel':
+            return generar_excel_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitud)
+        elif accion == 'descargar_txt':
+            return generar_txt_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitud)
         
         # Si la acción es buscar, mostrar resultados en pantalla
         else:
@@ -660,4 +668,161 @@ def generar_pdf_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitu
     
     # Construir el PDF
     doc.build(content)
+    return response
+
+
+def generar_excel_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitud):
+    """Genera un reporte de tickets en formato Excel"""
+    
+    # Crear workbook y hoja
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Reporte de Tickets"
+    
+    # Definir estilos
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+    header_alignment = Alignment(horizontal="center", vertical="center")
+    
+    # Título del reporte
+    ws.merge_cells('A1:F2')
+    title_cell = ws['A1']
+    title_cell.value = "REPORTE DE TICKETS PQRS"
+    title_cell.font = Font(bold=True, size=16)
+    title_cell.alignment = Alignment(horizontal="center", vertical="center")
+    
+    # Información de filtros
+    row_num = 4
+    if fecha_desde or fecha_hasta or (estado and estado != 'todos') or (tipo_solicitud and tipo_solicitud != 'todos'):
+        ws.merge_cells(f'A{row_num}:F{row_num}')
+        filtros_text = "Filtros aplicados: "
+        filtros = []
+        if fecha_desde:
+            filtros.append(f"Desde: {fecha_desde}")
+        if fecha_hasta:
+            filtros.append(f"Hasta: {fecha_hasta}")
+        if estado and estado != 'todos':
+            estado_display = dict(Ticket.ESTADO_CHOICES).get(estado, estado)
+            filtros.append(f"Estado: {estado_display}")
+        if tipo_solicitud and tipo_solicitud != 'todos':
+            tipo_display = dict(Ticket.TIPO_SOLICITUD_CHOICES).get(tipo_solicitud, tipo_solicitud)
+            filtros.append(f"Tipo: {tipo_display}")
+        
+        ws[f'A{row_num}'].value = filtros_text + " | ".join(filtros)
+        ws[f'A{row_num}'].font = Font(italic=True)
+        row_num += 2
+    
+    # Encabezados de columnas
+    headers = ['Código', 'Tipo', 'Estado', 'Severidad', 'Fecha Creación', 'Asignado a']
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=row_num, column=col_num)
+        cell.value = header
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = header_alignment
+    
+    # Datos
+    for ticket in tickets:
+        row_num += 1
+        
+        # Obtener valores para mostrar
+        tipo_display = dict(Ticket.TIPO_SOLICITUD_CHOICES).get(ticket.tipo_solicitud, ticket.tipo_solicitud)
+        estado_display = dict(Ticket.ESTADO_CHOICES).get(ticket.estado, ticket.estado)
+        severidad_display = dict(Ticket.SEVERIDAD_CHOICES).get(ticket.severidad, ticket.severidad)
+        fecha_creacion = ticket.fecha_creacion.strftime('%d/%m/%Y %H:%M')
+        asignado = ticket.usuario_asignado.get_full_name() if ticket.usuario_asignado else 'Sin asignar'
+        
+        # Agregar datos a las celdas
+        ws.cell(row=row_num, column=1, value=ticket.codigo)
+        ws.cell(row=row_num, column=2, value=tipo_display)
+        ws.cell(row=row_num, column=3, value=estado_display)
+        ws.cell(row=row_num, column=4, value=severidad_display)
+        ws.cell(row=row_num, column=5, value=fecha_creacion)
+        ws.cell(row=row_num, column=6, value=asignado)
+    
+    # Ajustar ancho de columnas
+    column_widths = [15, 12, 15, 12, 18, 20]
+    for i, width in enumerate(column_widths, 1):
+        ws.column_dimensions[get_column_letter(i)].width = width
+    
+    # Crear respuesta HTTP
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    
+    # Nombre del archivo
+    fecha_actual = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f'reporte_tickets_{fecha_actual}.xlsx'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    # Guardar workbook en la respuesta
+    wb.save(response)
+    return response
+
+
+def generar_txt_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitud):
+    """Genera un reporte de tickets en formato de texto separado por tabuladores"""
+    
+    response = HttpResponse(content_type='text/plain; charset=utf-8')
+    
+    # Nombre del archivo
+    fecha_actual = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f'reporte_tickets_{fecha_actual}.txt'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    # Escribir contenido
+    lines = []
+    
+    # Título
+    lines.append("REPORTE DE TICKETS PQRS")
+    lines.append("=" * 50)
+    lines.append("")
+    
+    # Información de filtros
+    if fecha_desde or fecha_hasta or (estado and estado != 'todos') or (tipo_solicitud and tipo_solicitud != 'todos'):
+        lines.append("Filtros aplicados:")
+        if fecha_desde:
+            lines.append(f"  - Fecha desde: {fecha_desde}")
+        if fecha_hasta:
+            lines.append(f"  - Fecha hasta: {fecha_hasta}")
+        if estado and estado != 'todos':
+            estado_display = dict(Ticket.ESTADO_CHOICES).get(estado, estado)
+            lines.append(f"  - Estado: {estado_display}")
+        if tipo_solicitud and tipo_solicitud != 'todos':
+            tipo_display = dict(Ticket.TIPO_SOLICITUD_CHOICES).get(tipo_solicitud, tipo_solicitud)
+            lines.append(f"  - Tipo: {tipo_display}")
+        lines.append("")
+    
+    # Información del reporte
+    lines.append(f"Fecha de generación: {datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+    lines.append(f"Total de tickets: {tickets.count()}")
+    lines.append("")
+    
+    # Encabezados (separados por tabulador)
+    headers = ["Código", "Tipo", "Estado", "Severidad", "Fecha Creación", "Asignado a"]
+    lines.append("\t".join(headers))
+    lines.append("-" * 80)
+    
+    # Datos
+    for ticket in tickets:
+        # Obtener valores para mostrar
+        tipo_display = dict(Ticket.TIPO_SOLICITUD_CHOICES).get(ticket.tipo_solicitud, ticket.tipo_solicitud)
+        estado_display = dict(Ticket.ESTADO_CHOICES).get(ticket.estado, ticket.estado)
+        severidad_display = dict(Ticket.SEVERIDAD_CHOICES).get(ticket.severidad, ticket.severidad)
+        fecha_creacion = ticket.fecha_creacion.strftime('%d/%m/%Y %H:%M')
+        asignado = ticket.usuario_asignado.get_full_name() if ticket.usuario_asignado else 'Sin asignar'
+        
+        # Crear línea con datos separados por tabulador
+        row_data = [
+            ticket.codigo,
+            tipo_display,
+            estado_display,
+            severidad_display,
+            fecha_creacion,
+            asignado
+        ]
+        lines.append("\t".join(row_data))
+    
+    # Escribir todo el contenido
+    response.write("\n".join(lines))
     return response
