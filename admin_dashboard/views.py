@@ -849,14 +849,23 @@ def generar_excel_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solici
 
 
 def generar_txt_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitud, agencia=None):
-    """Genera un reporte de tickets en formato de texto separado por tabuladores"""
+    """Genera un reporte de tickets en formato de texto plano"""
     
+    # Configurar response para forzar descarga como archivo de texto plano
     response = HttpResponse(content_type='text/plain; charset=utf-8')
     
-    # Nombre del archivo
+    # Nombre del archivo con extensión explícita
     fecha_actual = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
     filename = f'reporte_tickets_{fecha_actual}.txt'
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    # Headers específicos para forzar descarga como archivo TXT
+    response['Content-Disposition'] = f'attachment; filename="{filename}"; filename*=UTF-8\'\'{filename}'
+    response['Content-Type'] = 'text/plain; charset=utf-8'
+    response['Content-Transfer-Encoding'] = 'binary'
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    response['X-Content-Type-Options'] = 'nosniff'
     
     # Escribir contenido
     lines = []
@@ -886,9 +895,11 @@ def generar_txt_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitu
     lines.append(f"Total de tickets: {tickets.count()}")
     lines.append("")
     
-    # Encabezados (separados por tabulador)
-    headers = ["Código", "Tipo", "Estado", "Severidad", "Fecha Creación", "Asignado a"]
-    lines.append("\t".join(headers))
+    # Encabezados en formato de texto plano
+    lines.append("LISTADO DE TICKETS:")
+    lines.append("=" * 80)
+    lines.append("")
+    lines.append("Código\t\tTipo\t\tEstado\t\tSeveridad\tFecha Creación\t\tAsignado a")
     lines.append("-" * 80)
     
     # Datos
@@ -900,19 +911,21 @@ def generar_txt_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitu
         fecha_creacion = ticket.fecha_creacion.strftime('%d/%m/%Y %H:%M')
         asignado = ticket.usuario_asignado.get_full_name() if ticket.usuario_asignado else 'Sin asignar'
         
-        # Crear línea con datos separados por tabulador
-        row_data = [
-            ticket.codigo,
-            tipo_display,
-            estado_display,
-            severidad_display,
-            fecha_creacion,
-            asignado
-        ]
-        lines.append("\t".join(row_data))
+        # Formatear datos con espaciado fijo para mejor legibilidad
+        row_line = f"{ticket.codigo:<12}\t{tipo_display:<15}\t{estado_display:<12}\t{severidad_display:<10}\t{fecha_creacion:<17}\t{asignado}"
+        lines.append(row_line)
     
-    # Escribir todo el contenido
-    response.write("\n".join(lines))
+    # Agregar pie del reporte
+    lines.append("")
+    lines.append("=" * 80)
+    lines.append("Fin del reporte")
+    lines.append(f"Generado por: Sistema PQRS - Talento Escucha")
+    lines.append(f"Archivo: {filename}")
+    lines.append("Formato: Texto plano (.txt)")
+    
+    # Escribir todo el contenido con codificación explícita
+    content = "\n".join(lines)
+    response.write(content.encode('utf-8').decode('utf-8'))
     return response
 
 
