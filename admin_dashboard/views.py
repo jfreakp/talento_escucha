@@ -848,11 +848,40 @@ def perfil_usuario(request):
     # Obtener información adicional del usuario
     user_groups = request.user.groups.all()
     user_roles = [group.name for group in user_groups]
+    user_role = user_roles[0] if user_roles else 'Usuario'
+    
+    # Calcular estadísticas de tickets según el rol del usuario
+    if 'ADMIN' in user_roles:
+        # Los ADMIN ven estadísticas generales del sistema
+        tickets_asignados = Ticket.objects.count()  # Todos los tickets
+        tickets_resueltos = Ticket.objects.filter(estado='resuelto').count()  # Todos los resueltos
+        tickets_pendientes = Ticket.objects.filter(estado='pendiente').count()  # Todos los pendientes
+        
+        # También mostrar sus propios tickets asignados si los tiene
+        tickets_propios = Ticket.objects.filter(usuario_asignado=request.user).count()
+        tickets_propios_resueltos = Ticket.objects.filter(usuario_asignado=request.user, estado='resuelto').count()
+        tickets_propios_pendientes = Ticket.objects.filter(usuario_asignado=request.user, estado='pendiente').count()
+        
+        # Si tiene tickets asignados, mostrar esas estadísticas en su lugar
+        if tickets_propios > 0:
+            tickets_asignados = tickets_propios
+            tickets_resueltos = tickets_propios_resueltos
+            tickets_pendientes = tickets_propios_pendientes
+            
+    else:
+        # Los REVISORES ven solo sus tickets asignados
+        tickets_asignados = Ticket.objects.filter(usuario_asignado=request.user).count()
+        tickets_resueltos = Ticket.objects.filter(usuario_asignado=request.user, estado='resuelto').count()
+        tickets_pendientes = Ticket.objects.filter(usuario_asignado=request.user, estado='pendiente').count()
     
     context = {
         'user': request.user,
         'form': form,
         'user_roles': user_roles,
+        'user_role': user_role,
+        'tickets_asignados': tickets_asignados,
+        'tickets_resueltos': tickets_resueltos,
+        'tickets_pendientes': tickets_pendientes,
         'last_login': request.user.last_login,
         'date_joined': request.user.date_joined,
     }
