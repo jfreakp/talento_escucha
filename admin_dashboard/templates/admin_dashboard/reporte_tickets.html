@@ -141,11 +141,12 @@
                                 </select>
                             </div>
                             
+                            <!-- Input hidden para la acción de descarga -->
+                            <input type="hidden" id="accion_descarga" name="accion" value="descargar">
+                            
                             <!-- Botón de descarga -->
                             <div>
                                 <button type="submit" 
-                                        name="accion" 
-                                        value="descargar"
                                         id="btn_descargar"
                                         class="w-full inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition duration-200">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -404,11 +405,13 @@ document.getElementById('reporteForm').addEventListener('submit', function(e) {
     }
     
     // Si es descarga, cambiar la acción según el formato seleccionado
-    if (accion === 'descargar') {
+    if (e.submitter && e.submitter.id === 'btn_descargar') {
         const formatoSelect = document.getElementById('formato_descarga');
-        if (formatoSelect) {
+        const accionDescarga = document.getElementById('accion_descarga');
+        
+        if (formatoSelect && accionDescarga) {
             const formatoSeleccionado = formatoSelect.value;
-            e.submitter.value = formatoSeleccionado;
+            accionDescarga.value = formatoSeleccionado;
             
             // Mostrar mensaje según el formato
             if (formatoSeleccionado === 'descargar') {
@@ -441,17 +444,21 @@ document.getElementById('reporteForm').addEventListener('submit', function(e) {
 document.addEventListener('DOMContentLoaded', function() {
     const formatoSelect = document.getElementById('formato_descarga');
     const btnDescargar = document.getElementById('btn_descargar');
+    const accionDescarga = document.getElementById('accion_descarga');
     
-    if (formatoSelect && btnDescargar) {
+    if (formatoSelect && btnDescargar && accionDescarga) {
         formatoSelect.addEventListener('change', function() {
             const formato = this.value;
             const textoFormato = this.options[this.selectedIndex].text;
+            
+            // Actualizar el valor del input hidden
+            accionDescarga.value = formato;
             
             // Actualizar el texto del botón
             const iconoSvg = btnDescargar.querySelector('svg');
             btnDescargar.innerHTML = '';
             btnDescargar.appendChild(iconoSvg.cloneNode(true));
-            btnDescargar.appendChild(document.createTextNode(`Descargar ${textoFormato}`));
+            btnDescargar.appendChild(document.createTextNode(` Descargar ${textoFormato}`));
         });
     }
 });
