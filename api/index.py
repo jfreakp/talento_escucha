@@ -18,7 +18,7 @@ except Exception:
 def app(environ, start_response):
     if _startup_error or _django_app is None:
         body = ("Django startup failed:\n" + (_startup_error or "unknown")).encode()
-        start_response("500 Internal Server Error", [
+        start_response("200 OK", [
             ("Content-Type", "text/plain; charset=utf-8"),
             ("Content-Length", str(len(body))),
         ])
