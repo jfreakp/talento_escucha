@@ -4,21 +4,27 @@ import traceback
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "talento_escucha.settings")
 
+_startup_error = None
+
 try:
     from django.core.wsgi import get_wsgi_application
-    app = get_wsgi_application()
-    application = app
-except Exception as e:
-    error_detail = traceback.format_exc()
-    print(f"STARTUP ERROR: {e}\n{error_detail}", file=sys.stderr)
+    _django_app = get_wsgi_application()
+except Exception:
+    _startup_error = traceback.format_exc()
+    print("VERCEL_STARTUP_ERROR:\n" + _startup_error, file=sys.stderr, flush=True)
+    _django_app = None
 
-    def app(environ, start_response):
-        status = "500 Internal Server Error"
-        body = f"Startup error:\n{error_detail}".encode()
-        start_response(status, [
-            ("Content-Type", "text/plain"),
+
+def app(environ, start_response):
+    if _startup_error or _django_app is None:
+        body = ("Django startup failed:\n" + (_startup_error or "unknown")).encode()
+        start_response("500 Internal Server Error", [
+            ("Content-Type", "text/plain; charset=utf-8"),
             ("Content-Length", str(len(body))),
         ])
         return [body]
+    return _django_app(environ, start_response)
 
-    application = app
+
+application = app
+
