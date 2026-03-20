@@ -1,6 +1,7 @@
 import os
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand
 
 
@@ -11,6 +12,7 @@ class Command(BaseCommand):
         username = os.getenv("SUPERUSER_USERNAME")
         email = os.getenv("SUPERUSER_EMAIL")
         password = os.getenv("SUPERUSER_PASSWORD")
+        role_name = os.getenv("SUPERUSER_ROLE", "ADMIN")
 
         if not username or not email or not password:
             self.stdout.write(
@@ -37,6 +39,13 @@ class Command(BaseCommand):
             if not user.has_usable_password() or not user.check_password(password):
                 user.set_password(password)
                 updated = True
+
+            role_group = Group.objects.filter(name=role_name).first()
+            if role_group and not user.groups.filter(name=role_name).exists():
+                user.groups.clear()
+                user.groups.add(role_group)
+                updated = True
+
             if updated:
                 user.save()
                 self.stdout.write(self.style.SUCCESS(f"Updated existing superuser '{username}'"))
@@ -49,4 +58,11 @@ class Command(BaseCommand):
             email=email,
             password=password,
         )
+
+        role_group = Group.objects.filter(name=role_name).first()
+        if role_group:
+            created_user = user_model.objects.get(username=username)
+            created_user.groups.clear()
+            created_user.groups.add(role_group)
+
         self.stdout.write(self.style.SUCCESS(f"Created superuser '{username}'"))
