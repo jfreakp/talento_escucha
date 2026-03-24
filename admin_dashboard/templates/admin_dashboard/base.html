@@ -329,15 +329,43 @@
                 <!-- USER: Solo Dashboard (modo de solo lectura) -->
                 {% else %}
                     <a href="{% url 'admin_dashboard:dashboard' %}" 
-                       class="w-full px-2 inline-flex space-x-2 items-center border-b border-slate-700 py-3 bg-blue-800 hover:bg-white/5 transition ease-linear duration-150">
+                       class="w-full px-2 inline-flex space-x-2 items-center border-b border-slate-700 py-3 hover:bg-white/5 transition ease-linear duration-150 {% if request.resolver_match.url_name == 'dashboard' %}bg-blue-800{% endif %}">
                         <div>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 {% if request.resolver_match.url_name == 'dashboard' %}text-white{% endif %}">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
                             </svg>
                         </div>
                         <div class="flex flex-col">
-                            <span class="text-lg font-bold leading-5 text-white">Dashboard</span>
-                            <span class="text-sm text-white/50 hidden md:block">Solo Lectura</span>
+                            <span class="text-lg font-bold leading-5 {% if request.resolver_match.url_name == 'dashboard' %}text-white{% else %}text-slate-300{% endif %}">Dashboard</span>
+                            <span class="text-sm {% if request.resolver_match.url_name == 'dashboard' %}text-white/50{% else %}text-slate-500{% endif %} hidden md:block">Solo Lectura</span>
+                        </div>
+                    </a>
+
+                    <!-- Mis Solicitudes -->
+                    <a href="{% url 'admin_dashboard:mis_tickets' %}"
+                       class="w-full px-2 inline-flex space-x-2 items-center border-b border-slate-700 py-3 hover:bg-white/5 transition ease-linear duration-150 {% if request.resolver_match.url_name == 'mis_tickets' %}bg-blue-800{% endif %}">
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 {% if request.resolver_match.url_name == 'mis_tickets' %}text-white{% else %}text-slate-400{% endif %}">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" />
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-lg font-bold leading-5 {% if request.resolver_match.url_name == 'mis_tickets' %}text-white{% else %}text-slate-300{% endif %}">Mis Solicitudes</span>
+                            <span class="text-sm {% if request.resolver_match.url_name == 'mis_tickets' %}text-white/50{% else %}text-slate-500{% endif %} hidden md:block">Ver mis tickets</span>
+                        </div>
+                    </a>
+
+                    <!-- Nueva Solicitud -->
+                    <a href="{% url 'homepage:solicitud_usuario' %}" 
+                       class="w-full px-2 inline-flex space-x-2 items-center border-b border-slate-700 py-3 hover:bg-white/5 transition ease-linear duration-150 {% if request.resolver_match.url_name == 'solicitud_usuario' %}bg-blue-800{% endif %}">
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 {% if request.resolver_match.url_name == 'solicitud_usuario' %}text-white{% else %}text-slate-400{% endif %}">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-lg font-bold leading-5 {% if request.resolver_match.url_name == 'solicitud_usuario' %}text-white{% else %}text-slate-300{% endif %}">Nueva Solicitud</span>
+                            <span class="text-sm {% if request.resolver_match.url_name == 'solicitud_usuario' %}text-white/50{% else %}text-slate-500{% endif %} hidden md:block">Crear ticket</span>
                         </div>
                     </a>
                 {% endif %}

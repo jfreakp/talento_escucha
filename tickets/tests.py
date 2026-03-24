@@ -1,6 +1,9 @@
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
+from django.contrib.auth.models import Group
 from django.urls import reverse
+from django.core import mail
+from django.test.utils import override_settings
 from tickets.models import Agencia, Ticket
 from tickets.forms import TicketForm
 
@@ -49,6 +52,7 @@ class TicketFormTest(TestCase):
             'telefono': '+1234567890',
             'agencia': self.agencia.id,
             'tipo_solicitud': 'P',
+            'severidad': 'M',
             'descripcion': 'Necesito hacer una petición'
         }
         
@@ -78,6 +82,7 @@ class TicketFormTest(TestCase):
             'telefono': '+1234567890',
             'agencia': self.agencia.id,
             'tipo_solicitud': 'Q',
+            'severidad': 'M',
             'descripcion': 'Descripción de prueba'
         }
         
@@ -94,6 +99,7 @@ class TicketFormTest(TestCase):
             'telefono': '+1234567890',
             'agencia': self.agencia.id,
             'tipo_solicitud': 'R',
+            'severidad': 'M',
             'descripcion': 'Test description'
         }
         
@@ -103,9 +109,9 @@ class TicketFormTest(TestCase):
         ticket = form.save()
         
         # Verificar que el ticket se guardó correctamente
-        self.assertEqual(ticket.nombre, 'Juan')
-        self.assertEqual(ticket.apellido, 'Pérez')
-        self.assertEqual(ticket.correo, 'juan@example.com')
+        self.assertEqual(ticket.nombre, self.user.first_name)
+        self.assertEqual(ticket.apellido, self.user.last_name)
+        self.assertEqual(ticket.correo, self.user.email)
         self.assertEqual(ticket.agencia, self.agencia)
         self.assertEqual(ticket.usuario_crea, self.user)
         self.assertEqual(ticket.estado, 'pendiente')
@@ -118,6 +124,9 @@ class TicketFormTest(TestCase):
         self.assertEqual(form.fields['nombre'].initial, self.user.first_name)
         self.assertEqual(form.fields['apellido'].initial, self.user.last_name)
         self.assertEqual(form.fields['correo'].initial, self.user.email)
+        self.assertTrue(form.fields['nombre'].disabled)
+        self.assertTrue(form.fields['apellido'].disabled)
+        self.assertTrue(form.fields['correo'].disabled)
     
     def test_ticket_codigo_autogeneration(self):
         """Prueba que el código se genere automáticamente al crear un ticket"""
@@ -128,6 +137,7 @@ class TicketFormTest(TestCase):
             'telefono': '+1234567890',
             'agencia': self.agencia.id,
             'tipo_solicitud': 'P',
+            'severidad': 'M',
             'descripcion': 'Prueba de generación automática de código'
         }
         
@@ -194,6 +204,7 @@ class SolicitudUsuarioViewTest(TestCase):
             'telefono': '+1234567890',
             'agencia': self.agencia.id,
             'tipo_solicitud': 'S',
+            'severidad': 'M',
             'descripcion': 'Test solicitud completa'
         }
         
@@ -238,6 +249,7 @@ class SolicitudUsuarioViewTest(TestCase):
             'telefono': '+0987654321',
             'agencia': self.agencia.id,
             'tipo_solicitud': 'P',
+            'severidad': 'M',
             'descripcion': 'Petición desde usuario anónimo'
         }
         
@@ -259,5 +271,244 @@ class SolicitudUsuarioViewTest(TestCase):
         
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Crear Nueva Solicitud')
-        self.assertContains(response, 'Solicitud sin registro')
+        self.assertContains(response, 'sin necesidad de registrarte')
         self.assertIn('form', response.context)
+
+
+@override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+class TicketAsignacionEmailTest(TestCase):
+    """Tests para validar el envío de correo al asignar tickets."""
+
+    def setUp(self):
+        self.creador = User.objects.create_user(
+            username='creador',
+            email='creador@example.com',
+            password='testpass123',
+            first_name='Usuario',
+            last_name='Creador',
+        )
+        self.revisor = User.objects.create_user(
+            username='revisor',
+            email='revisor@example.com',
+            password='testpass123',
+            first_name='Usuario',
+            last_name='Revisor',
+        )
+        self.admin = User.objects.create_user(
+            username='admin_test',
+            email='admin@example.com',
+            password='testpass123',
+        )
+
+        self.agencia = Agencia.objects.create(
+            codigo_faces='EMAIL001',
+            nombre='Agencia Email',
+            usuario_creacion=self.admin,
+            usuario_actualizacion=self.admin,
+        )
+
+    def test_envia_correo_cuando_ticket_registrado_es_asignado(self):
+        ticket = Ticket.objects.create(
+            nombre='Juan',
+            apellido='Prueba',
+            correo='juan@example.com',
+            telefono='+1234567890',
+            agencia=self.agencia,
+            tipo_solicitud='P',
+            descripcion='Ticket para validar notificacion por asignacion',
+            usuario_crea=self.creador,
+            usuario_actualiza=self.creador,
+        )
+
+        mail.outbox = []
+
+        ticket.usuario_asignado = self.revisor
+        ticket.estado = 'en_proceso'
+        ticket.usuario_actualiza = self.revisor
+        ticket.save()
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(ticket.codigo, mail.outbox[0].subject)
+        self.assertEqual(mail.outbox[0].to, [self.creador.email, ticket.correo, self.revisor.email])
+
+    def test_envia_correo_cuando_ticket_anonimo_es_asignado(self):
+        ticket = Ticket.objects.create(
+            nombre='Ana',
+            apellido='Anonima',
+            correo='ana@example.com',
+            telefono='+0987654321',
+            agencia=self.agencia,
+            tipo_solicitud='Q',
+            descripcion='Ticket anonimo para validar que no se envia correo de asignacion',
+            usuario_actualiza=self.admin,
+        )
+
+        mail.outbox = []
+
+        ticket.usuario_asignado = self.revisor
+        ticket.estado = 'en_proceso'
+        ticket.usuario_actualiza = self.revisor
+        ticket.save()
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(ticket.codigo, mail.outbox[0].subject)
+        self.assertEqual(mail.outbox[0].to, [ticket.correo, self.revisor.email])
+
+
+@override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+class TicketResolucionEmailTest(TestCase):
+    """Tests para validar el envío de correo al resolver tickets."""
+
+    def setUp(self):
+        self.creador = User.objects.create_user(
+            username='creador_res',
+            email='creador_res@example.com',
+            password='testpass123',
+            first_name='Usuario',
+            last_name='Creador',
+        )
+        self.revisor = User.objects.create_user(
+            username='revisor_res',
+            email='revisor_res@example.com',
+            password='testpass123',
+            first_name='Usuario',
+            last_name='Revisor',
+        )
+        self.admin = User.objects.create_user(
+            username='admin_res',
+            email='admin_res@example.com',
+            password='testpass123',
+        )
+
+        self.agencia = Agencia.objects.create(
+            codigo_faces='EMAILRES001',
+            nombre='Agencia Email Resolucion',
+            usuario_creacion=self.admin,
+            usuario_actualizacion=self.admin,
+        )
+
+    def test_envia_correo_cuando_ticket_registrado_se_resuelve(self):
+        ticket = Ticket.objects.create(
+            nombre='Carlos',
+            apellido='Registrado',
+            correo='carlos@example.com',
+            telefono='+1111111111',
+            agencia=self.agencia,
+            tipo_solicitud='P',
+            descripcion='Ticket registrado para validar correo de resolucion',
+            usuario_crea=self.creador,
+            usuario_asignado=self.revisor,
+            usuario_actualiza=self.revisor,
+            estado='en_proceso',
+        )
+
+        mail.outbox = []
+
+        ticket.solucion = 'Se aplico la solucion de prueba'
+        ticket.estado = 'resuelto'
+        ticket.usuario_actualiza = self.revisor
+        ticket.save()
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(ticket.codigo, mail.outbox[0].subject)
+        self.assertEqual(mail.outbox[0].to, [self.creador.email, ticket.correo, self.revisor.email])
+
+    def test_envia_correo_cuando_ticket_anonimo_se_resuelve(self):
+        ticket = Ticket.objects.create(
+            nombre='Lucia',
+            apellido='Anonima',
+            correo='lucia@example.com',
+            telefono='+2222222222',
+            agencia=self.agencia,
+            tipo_solicitud='R',
+            descripcion='Ticket anonimo para validar correo de resolucion',
+            usuario_asignado=self.revisor,
+            usuario_actualiza=self.revisor,
+            estado='en_proceso',
+        )
+
+        mail.outbox = []
+
+        ticket.solucion = 'Se envio una respuesta al caso'
+        ticket.estado = 'resuelto'
+        ticket.usuario_actualiza = self.revisor
+        ticket.save()
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(ticket.codigo, mail.outbox[0].subject)
+        self.assertEqual(mail.outbox[0].to, [ticket.correo, self.revisor.email])
+
+
+@override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+class TicketCreacionEmailTest(TestCase):
+    """Tests para validar correo al crear tickets."""
+
+    def setUp(self):
+        self.creador = User.objects.create_user(
+            username='creador_new',
+            email='creador_new@example.com',
+            password='testpass123',
+            first_name='Usuario',
+            last_name='Creador',
+        )
+        self.revisor = User.objects.create_user(
+            username='revisor_new',
+            email='revisor_new@example.com',
+            password='testpass123',
+        )
+        self.admin = User.objects.create_user(
+            username='admin_new',
+            email='admin_new@example.com',
+            password='testpass123',
+        )
+
+        self.agencia = Agencia.objects.create(
+            codigo_faces='EMAILNEW001',
+            nombre='Agencia Email Creacion',
+            usuario_creacion=self.admin,
+            usuario_actualizacion=self.admin,
+        )
+
+        revisor_group, _ = Group.objects.get_or_create(name='REVISOR')
+        self.revisor.groups.add(revisor_group)
+
+    def test_creacion_envia_confirmacion_a_usuario_y_correo_solicitud(self):
+        mail.outbox = []
+
+        ticket = Ticket.objects.create(
+            nombre='Laura',
+            apellido='Registrada',
+            correo='laura.solicitud@example.com',
+            telefono='+3000000000',
+            agencia=self.agencia,
+            tipo_solicitud='P',
+            descripcion='Solicitud creada para validar correo de confirmacion',
+            usuario_crea=self.creador,
+            usuario_actualiza=self.creador,
+        )
+
+        self.assertIsNotNone(ticket.codigo)
+        self.assertGreaterEqual(len(mail.outbox), 2)
+        confirmaciones = [m for m in mail.outbox if ticket.codigo in m.subject and 'Hemos recibido tu solicitud' in m.subject]
+        self.assertEqual(len(confirmaciones), 1)
+        self.assertEqual(confirmaciones[0].to, [self.creador.email, ticket.correo])
+
+    def test_creacion_envia_confirmacion_a_correo_solicitud_para_anonimo(self):
+        mail.outbox = []
+
+        ticket = Ticket.objects.create(
+            nombre='Pedro',
+            apellido='Anonimo',
+            correo='pedro.anonimo@example.com',
+            telefono='+3111111111',
+            agencia=self.agencia,
+            tipo_solicitud='Q',
+            descripcion='Solicitud anonima para validar correo de confirmacion',
+            usuario_actualiza=self.admin,
+        )
+
+        self.assertIsNotNone(ticket.codigo)
+        self.assertGreaterEqual(len(mail.outbox), 2)
+        confirmaciones = [m for m in mail.outbox if ticket.codigo in m.subject and 'Hemos recibido tu solicitud' in m.subject]
+        self.assertEqual(len(confirmaciones), 1)
+        self.assertEqual(confirmaciones[0].to, [ticket.correo])

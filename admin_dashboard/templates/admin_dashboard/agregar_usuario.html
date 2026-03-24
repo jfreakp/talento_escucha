@@ -233,10 +233,10 @@
                                 <select id="role" 
                                         name="role" 
                                         required
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+                                        class="w-full text-black px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
                                     <option value="">Selecciona un rol</option>
                                     {% for role in roles %}
-                                        <option value="{{ role.name }}">
+                                        <option class="text-black" value="{{ role.name }}">
                                             {{ role.name }}
                                             {% if role.name == 'ADMIN' %} - Acceso completo al sistema
                                             {% elif role.name == 'REVISOR' %} - Gestión completa de tickets

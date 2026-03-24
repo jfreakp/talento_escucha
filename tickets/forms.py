@@ -82,12 +82,36 @@ class TicketForm(forms.ModelForm):
         
         # Si hay un usuario autenticado, pre-llenar algunos campos
         if self.user and self.user.is_authenticated:
+            # Prellenar desde perfil
             if self.user.first_name:
                 self.fields['nombre'].initial = self.user.first_name
             if self.user.last_name:
                 self.fields['apellido'].initial = self.user.last_name
             if self.user.email:
                 self.fields['correo'].initial = self.user.email
+
+            # Prellenar con datos del último ticket creado por el usuario
+            ultimo_ticket = Ticket.objects.filter(usuario_crea=self.user).order_by('-fecha_creacion').first()
+            if ultimo_ticket:
+                if ultimo_ticket.telefono:
+                    self.fields['telefono'].initial = ultimo_ticket.telefono
+                if ultimo_ticket.agencia:
+                    self.fields['agencia'].initial = ultimo_ticket.agencia_id
+
+            # Bloquear campos de identidad precargados para evitar edición manual
+            if self.user.first_name:
+                self._lock_prefilled_field('nombre')
+            if self.user.last_name:
+                self._lock_prefilled_field('apellido')
+            if self.user.email:
+                self._lock_prefilled_field('correo')
+
+    def _lock_prefilled_field(self, field_name):
+        """Bloquea visual y funcionalmente un campo precargado."""
+        field = self.fields[field_name]
+        field.disabled = True
+        field.widget.attrs['readonly'] = 'readonly'
+        field.widget.attrs['class'] += ' bg-gray-100 cursor-not-allowed'
     
     def clean_correo(self):
         """Validación personalizada para el correo"""
@@ -113,6 +137,14 @@ class TicketForm(forms.ModelForm):
         if self.user and self.user.is_authenticated:
             ticket.usuario_crea = self.user
             ticket.usuario_actualiza = self.user
+
+            # Asegurar consistencia de identidad con el perfil autenticado
+            if self.user.first_name:
+                ticket.nombre = self.user.first_name
+            if self.user.last_name:
+                ticket.apellido = self.user.last_name
+            if self.user.email:
+                ticket.correo = self.user.email
         
         # Estado inicial
         ticket.estado = 'pendiente'

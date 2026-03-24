@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
 from tickets.forms import TicketForm, TicketAnonimForm
 from tickets.models import Ticket
 from tickets.pdf_utils import generar_pdf_ticket_anonimo
@@ -21,10 +22,10 @@ def sobre_nosotros(request):
     """Página sobre nosotros - vacía por ahora"""
     return render(request, 'homepage/sobre_nosotros.html')
 
+@login_required(login_url='/auth/login/')
 def solicitud_usuario(request):
-    """Página de solicitud para usuarios (autenticados o anónimos)"""
-    # Determinar el usuario (puede ser None si es anónimo)
-    user = request.user if request.user.is_authenticated else None
+    """Página de solicitud para usuarios registrados (requiere autenticación)"""
+    user = request.user
     
     if request.method == 'POST':
         form = TicketForm(request.POST, user=user)

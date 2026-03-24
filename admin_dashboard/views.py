@@ -8,7 +8,7 @@ from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from django.db.models import Q
 from django.core.paginator import Paginator
-from tickets.models import Ticket, Agencia, TicketAuditoria
+from tickets.models import Ticket, Agencia, TicketAuditoria, enviar_notificacion_asignacion_ticket
 from .decorators import require_role, user_can_manage_users, user_has_any_role
 from .forms import UserProfileForm, CustomPasswordChangeForm
 from reportlab.lib.pagesizes import letter, A4
@@ -421,6 +421,32 @@ def tickets_asignados(request):
 
 
 @login_required
+def mis_tickets(request):
+    """Vista para que un usuario vea los tickets que ha ingresado (solo lectura)"""
+    tickets_list = Ticket.objects.filter(
+        usuario_crea=request.user
+    ).order_by('-fecha_creacion')
+
+    stats = {
+        'pendiente': tickets_list.filter(estado='pendiente').count(),
+        'en_proceso': tickets_list.filter(estado='en_proceso').count(),
+        'resuelto': tickets_list.filter(estado='resuelto').count(),
+    }
+
+    paginator = Paginator(tickets_list, 10)
+    page_number = request.GET.get('page')
+    tickets = paginator.get_page(page_number)
+
+    context = {
+        'tickets': tickets,
+        'total_tickets': tickets_list.count(),
+        'stats': stats,
+    }
+
+    return render(request, 'admin_dashboard/mis_tickets.html', context)
+
+
+@login_required
 def asignar_ticket_a_mi(request, ticket_id):
     """Vista para que un revisor se asigne un ticket a sí mismo"""
     # Verificar que el usuario tenga el rol de REVISOR
@@ -446,7 +472,13 @@ def asignar_ticket_a_mi(request, ticket_id):
         ticket.usuario_asignado = request.user
         ticket.estado = 'en_proceso'  # Cambiar estado a en proceso
         ticket.usuario_actualiza = request.user
+
+        # Este flujo maneja el envío de correo explícitamente después del guardado.
+        ticket._skip_assignment_email_signal = True
         ticket.save()  # La auditoría se registra automáticamente con el signal
+
+        # Enviar notificación al solicitante de forma explícita.
+        enviar_notificacion_asignacion_ticket(ticket)
         
         messages.success(request, f"Te has asignado exitosamente el ticket #{ticket.codigo}.")
         return redirect('admin_dashboard:tickets_asignados')

@@ -1,5 +1,6 @@
 ﻿from pathlib import Path
 import os
+import dj_database_url
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -56,19 +57,35 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'talento_escucha.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'talento_escucha_db'),
-        'USER': os.getenv('DB_USER', 'talento_user'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'talento_password_2024'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
-        'OPTIONS': {
-            'options': '-c search_path=public'
-        },
+APP_ENV = os.getenv('APP_ENV', 'DEV').upper()
+
+if APP_ENV == 'PRO':
+    _database_url = os.getenv('PRO_DATABASE_URL') or os.getenv('DATABASE_URL')
+else:
+    _database_url = os.getenv('DEV_DATABASE_URL')
+
+if _database_url:
+    DATABASES = {
+        'default': dj_database_url.parse(
+            _database_url,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'talento_escucha_db'),
+            'USER': os.getenv('DB_USER', 'talento_user'),
+            'PASSWORD': os.getenv('DB_PASSWORD', 'talento_password_2024'),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+            'OPTIONS': {
+                'options': '-c search_path=public'
+            },
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {

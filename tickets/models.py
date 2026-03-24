@@ -267,6 +267,8 @@ class Ticket(models.Model):
             
             # Enviar notificación a revisores cuando se crea un nuevo ticket
             enviar_notificacion_nuevo_ticket(self)
+            # Enviar confirmación al solicitante cuando se crea un nuevo ticket
+            enviar_confirmacion_creacion_ticket(self)
 
 
 class TicketAuditoria(models.Model):
@@ -468,8 +470,9 @@ def auditoria_automatica_ticket(sender, instance, created, **kwargs):
                     comentario=f'Ticket asignado a {instance.usuario_asignado.get_full_name() or instance.usuario_asignado.username}'
                 )
                 
-                # Enviar notificación al usuario que creó el ticket
-                enviar_notificacion_asignacion_ticket(instance)
+                # Enviar notificación al usuario que creó el ticket (excepto si ya se maneja explícitamente en la vista)
+                if not getattr(instance, '_skip_assignment_email_signal', False):
+                    enviar_notificacion_asignacion_ticket(instance)
             
             # 3. RESOLUCIÓN: Cuando se resuelve un ticket (estado cambió a "resuelto")
             elif (estado_anterior['estado'] != 'resuelto' and 
@@ -578,20 +581,85 @@ Sistema PQRS - Talento Escucha
         # No lanzar la excepción para evitar que falle la creación del ticket
 
 
-def enviar_notificacion_asignacion_ticket(ticket):
+def enviar_confirmacion_creacion_ticket(ticket):
     """
-    Envía notificación por correo al usuario que creó el ticket
-    cuando se asigna a un revisor (solo para tickets de usuarios registrados).
+    Envía confirmación de creación al solicitante del ticket.
+    Se notifica al correo de la cuenta (si existe) y al correo ingresado en la solicitud.
     """
     try:
-        # Solo enviar si el ticket fue creado por un usuario registrado
-        if not ticket.usuario_crea:
-            logger.info(f"Ticket {ticket.codigo} es anónimo, no se envía notificación de asignación")
+        recipient_list = []
+        if ticket.usuario_crea and ticket.usuario_crea.email:
+            recipient_list.append(ticket.usuario_crea.email)
+        if ticket.correo:
+            recipient_list.append(ticket.correo)
+
+        recipient_list = list(dict.fromkeys(recipient_list))
+        if not recipient_list:
+            logger.warning(f"Ticket {ticket.codigo} no tiene correo de destinatario para confirmación de creación")
             return
-        
-        # Verificar que tenga email el usuario que creó el ticket
-        if not ticket.usuario_crea.email:
-            logger.warning(f"Usuario {ticket.usuario_crea.username} no tiene email configurado")
+
+        destinatario_nombre = ticket.nombre_completo
+        tipo_solicitud_display = dict(ticket.TIPO_SOLICITUD_CHOICES).get(ticket.tipo_solicitud, ticket.tipo_solicitud)
+
+        asunto = f"Hemos recibido tu solicitud {ticket.codigo}"
+        mensaje = f"""
+Estimado/a {destinatario_nombre},
+
+Tu solicitud ha sido registrada correctamente en el sistema PQRS - Talento Escucha.
+
+DETALLES DE TU SOLICITUD:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+• Código: {ticket.codigo}
+• Tipo: {tipo_solicitud_display}
+• Estado: {dict(ticket.ESTADO_CHOICES).get(ticket.estado, ticket.estado)}
+• Fecha de creación: {ticket.fecha_creacion.strftime('%d/%m/%Y %H:%M')}
+
+DESCRIPCIÓN:
+{ticket.descripcion}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Conserva este código para hacer seguimiento a tu solicitud.
+
+Saludos cordiales,
+Equipo PQRS - Talento Escucha
+        """.strip()
+
+        send_mail(
+            subject=asunto,
+            message=mensaje,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=recipient_list,
+            fail_silently=False,
+        )
+
+        logger.info(f"Confirmación de creación enviada a {', '.join(recipient_list)} para el ticket {ticket.codigo}")
+
+    except Exception as e:
+        logger.error(f"Error al enviar confirmación de creación para ticket {ticket.codigo}: {str(e)}")
+
+
+def enviar_notificacion_asignacion_ticket(ticket):
+    """
+    Envía notificación por correo al solicitante del ticket
+    cuando se asigna a un revisor.
+    """
+    try:
+        # Notificar a ambas partes: solicitante y revisor asignado.
+        recipient_list = []
+        if ticket.usuario_crea and ticket.usuario_crea.email:
+            recipient_list.append(ticket.usuario_crea.email)
+        if ticket.correo:
+            recipient_list.append(ticket.correo)
+        if ticket.usuario_asignado and ticket.usuario_asignado.email:
+            recipient_list.append(ticket.usuario_asignado.email)
+
+        recipient_list = list(dict.fromkeys(recipient_list))
+        destinatario_nombre = ticket.nombre_completo
+
+        if not recipient_list:
+            logger.warning(f"Ticket {ticket.codigo} no tiene correo de destinatario para notificación de asignación")
             return
         
         # Preparar el contenido del correo
@@ -601,7 +669,7 @@ def enviar_notificacion_asignacion_ticket(ticket):
         revisor_nombre = ticket.usuario_asignado.get_full_name() or ticket.usuario_asignado.username
         
         mensaje = f"""
-Estimado/a {ticket.usuario_crea.get_full_name() or ticket.usuario_crea.username},
+Estimado/a {destinatario_nombre},
 
 Tu solicitud ha sido asignada para revisión en el sistema PQRS - Talento Escucha.
 
@@ -632,11 +700,11 @@ Equipo PQRS - Talento Escucha
             subject=asunto,
             message=mensaje,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[ticket.usuario_crea.email],
+            recipient_list=recipient_list,
             fail_silently=False,
         )
         
-        logger.info(f"Notificación de asignación enviada a {ticket.usuario_crea.email} para el ticket {ticket.codigo}")
+        logger.info(f"Notificación de asignación enviada a {', '.join(recipient_list)} para el ticket {ticket.codigo}")
         
     except Exception as e:
         logger.error(f"Error al enviar notificación de asignación para ticket {ticket.codigo}: {str(e)}")
@@ -644,18 +712,24 @@ Equipo PQRS - Talento Escucha
 
 def enviar_notificacion_solucion_ticket(ticket):
     """
-    Envía notificación por correo al usuario que creó el ticket
-    cuando se proporciona una solución (solo para tickets de usuarios registrados).
+    Envía notificación por correo al solicitante del ticket
+    cuando se proporciona una solución.
     """
     try:
-        # Solo enviar si el ticket fue creado por un usuario registrado
-        if not ticket.usuario_crea:
-            logger.info(f"Ticket {ticket.codigo} es anónimo, no se envía notificación de solución")
-            return
-        
-        # Verificar que tenga email el usuario que creó el ticket
-        if not ticket.usuario_crea.email:
-            logger.warning(f"Usuario {ticket.usuario_crea.username} no tiene email configurado")
+        # Notificar a ambas partes: solicitante y revisor asignado.
+        recipient_list = []
+        if ticket.usuario_crea and ticket.usuario_crea.email:
+            recipient_list.append(ticket.usuario_crea.email)
+        if ticket.correo:
+            recipient_list.append(ticket.correo)
+        if ticket.usuario_asignado and ticket.usuario_asignado.email:
+            recipient_list.append(ticket.usuario_asignado.email)
+
+        recipient_list = list(dict.fromkeys(recipient_list))
+        destinatario_nombre = ticket.nombre_completo
+
+        if not recipient_list:
+            logger.warning(f"Ticket {ticket.codigo} no tiene correo de destinatario para notificación de solución")
             return
         
         # Preparar el contenido del correo
@@ -666,7 +740,7 @@ def enviar_notificacion_solucion_ticket(ticket):
         revisor_nombre = ticket.usuario_asignado.get_full_name() or ticket.usuario_asignado.username if ticket.usuario_asignado else "Equipo de Revisión"
         
         mensaje = f"""
-Estimado/a {ticket.usuario_crea.get_full_name() or ticket.usuario_crea.username},
+    Estimado/a {destinatario_nombre},
 
 Tenemos una respuesta para tu solicitud en el sistema PQRS - Talento Escucha.
 
@@ -700,11 +774,11 @@ Equipo PQRS - Talento Escucha
             subject=asunto,
             message=mensaje,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[ticket.usuario_crea.email],
+            recipient_list=recipient_list,
             fail_silently=False,
         )
         
-        logger.info(f"Notificación de solución enviada a {ticket.usuario_crea.email} para el ticket {ticket.codigo}")
+        logger.info(f"Notificación de solución enviada a {', '.join(recipient_list)} para el ticket {ticket.codigo}")
         
     except Exception as e:
         logger.error(f"Error al enviar notificación de solución para ticket {ticket.codigo}: {str(e)}")
