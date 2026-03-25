@@ -11,7 +11,25 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-this-in-production'
 
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = []
+_allowed_hosts_env = os.getenv('ALLOWED_HOSTS', '')
+if _allowed_hosts_env:
+    ALLOWED_HOSTS = [host.strip() for host in _allowed_hosts_env.split(',') if host.strip()]
+else:
+    ALLOWED_HOSTS = [
+        'localhost',
+        '127.0.0.1',
+        '.vercel.app',
+        'talento-escucha.vercel.app',
+    ]
+
+_csrf_trusted_origins_env = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+if _csrf_trusted_origins_env:
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in _csrf_trusted_origins_env.split(',') if origin.strip()]
+else:
+    CSRF_TRUSTED_ORIGINS = [
+        'https://*.vercel.app',
+        'https://talento-escucha.vercel.app',
+    ]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
