@@ -5,14 +5,14 @@
 
 {% block content %}
 <div class="mb-6">
-    <h1 class="text-3xl font-bold text-gray-900">{{ page_title }}</h1>
-    <p class="text-gray-600 mt-2">{{ page_description }}</p>
+    <h1 class="text-3xl font-bold text-[#1c1b1b]">{{ page_title }}</h1>
+    <p class="text-[#6b6b6b] mt-2">{{ page_description }}</p>
 </div>
 
 
 
 <!-- Lista de tickets -->
-<div class="bg-white shadow overflow-hidden sm:rounded-md">
+<div class="bg-white rounded-xl border border-[#ece9e8]">
     <div class="px-4 py-5 sm:px-6">
         <h3 class="text-lg leading-6 font-medium text-gray-900">Lista de Tickets Pendientes</h3>
         <p class="mt-1 max-w-2xl text-sm text-gray-500">Tickets que requieren revisión o asignación.</p>
@@ -22,21 +22,21 @@
         <ul class="divide-y divide-gray-200">
             {% for ticket in tickets %}
             <li>
-                <a href="{% url 'admin_dashboard:view_ticket' codigo=ticket.codigo %}" class="block hover:bg-gray-50">
+                <a href="{% url 'admin_dashboard:view_ticket' codigo=ticket.codigo %}" class="block hover:bg-[#fff5f2]">
                     <div class="px-4 py-4 sm:px-6">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
                                 <div class="flex-shrink-0">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                         {% if ticket.estado == 'pendiente' %}bg-yellow-100 text-yellow-800
-                                        {% elif ticket.estado == 'en_proceso' %}bg-blue-100 text-blue-800
+                                        {% elif ticket.estado == 'en_proceso' %}bg-[#fff5f2] text-[#F95F2B]
                                         {% else %}bg-gray-100 text-gray-800{% endif %}">
                                         {{ ticket.get_estado_display }}
                                     </span>
                                 </div>
                                 <div class="ml-4">
                                     <div class="flex items-center">
-                                        <p class="text-sm font-medium text-blue-600 truncate">
+                                        <p class="text-sm font-medium text-[#F95F2B] truncate">
                                             #{{ ticket.codigo }}
                                         </p>
                                         <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
@@ -83,7 +83,7 @@
                                     </p>
                                     {% if user|has_role:'ADMIN' %}
                                         <button type="button"
-                                            class="ml-4 inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
+                                            class="ml-4 inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-[#F95F2B] hover:bg-[#ae3200] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#F95F2B] transition duration-150 ease-in-out"
                                             onclick="event.preventDefault(); event.stopPropagation(); window.location.href='{% url 'admin_dashboard:view_ticket' codigo=ticket.codigo %}'">
                                         <svg class="-ml-0.5 mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m10 0v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2m10 0H7m10-12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -94,7 +94,7 @@
                                     <form method="post" action="{% url 'admin_dashboard:asignar_ticket_a_mi' ticket.id %}" class="ml-4" id="form-asignar-{{ ticket.id }}">
                                         {% csrf_token %}
                                         <button type="button"
-                                                class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
+                                                class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-[#F95F2B] hover:bg-[#ae3200] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#F95F2B] transition duration-150 ease-in-out"
                                                 onclick="confirmarAsignacion(event, '{{ ticket.id }}', '{{ ticket.codigo }}')">
                                             <svg class="-ml-0.5 mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -163,7 +163,7 @@
 
                 {% for num in tickets.paginator.page_range %}
                     {% if tickets.number == num %}
-                        <span aria-current="page" class="bg-blue-50 border-blue-500 text-blue-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        <span aria-current="page" class="bg-[#fff5f2] border-[#F95F2B] text-[#F95F2B] relative inline-flex items-center px-4 py-2 border text-sm font-medium">
                             {{ num }}
                         </span>
                     {% elif num > tickets.number|add:'-3' and num < tickets.number|add:'3' %}
@@ -198,7 +198,7 @@ function confirmarAsignacion(event, ticketId, ticketCodigo) {
         text: `¿Estás seguro de que quieres asignarte el ticket #${ticketCodigo}?`,
         icon: 'question',
         showCancelButton: true,
-        confirmButtonColor: '#2563eb',
+        confirmButtonColor: '#F95F2B',
         cancelButtonColor: '#dc2626',
         confirmButtonText: 'Sí, asignarme',
         cancelButtonText: 'Cancelar',

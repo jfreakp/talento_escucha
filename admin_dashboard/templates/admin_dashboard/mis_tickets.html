@@ -4,24 +4,24 @@
 
 {% block content %}
 <div class="mb-6">
-    <h1 class="text-3xl font-bold text-gray-900">Mis Solicitudes</h1>
-    <p class="text-gray-600 mt-2">Tickets que has ingresado al sistema.</p>
+    <h1 class="text-3xl font-bold text-[#1c1b1b]">Mis Solicitudes</h1>
+    <p class="text-[#6b6b6b] mt-2">Tickets que has ingresado al sistema.</p>
 </div>
 
 <!-- Estadísticas rápidas -->
 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-    <div class="bg-blue-50 overflow-hidden shadow rounded-lg">
+    <div class="bg-[#fff5f2] overflow-hidden shadow rounded-lg">
         <div class="p-5">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <svg class="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="h-6 w-6 text-[#F95F2B]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-blue-700 truncate">Total</dt>
-                        <dd class="text-lg font-medium text-blue-900">{{ total_tickets }}</dd>
+                        <dt class="text-sm font-medium text-[#F95F2B] truncate">Total</dt>
+                        <dd class="text-lg font-medium text-[#1c1b1b]">{{ total_tickets }}</dd>
                     </dl>
                 </div>
             </div>
@@ -83,25 +83,24 @@
     </div>
 </div>
 
-<!-- Lista de tickets -->
-<div class="bg-white shadow overflow-hidden sm:rounded-md">
-    <div class="px-4 py-5 sm:px-6">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">Mis Solicitudes</h3>
-        <p class="mt-1 max-w-2xl text-sm text-gray-500">Solo lectura — haz clic en un ticket para ver su detalle.</p>
+                <div class="bg-white shadow overflow-hidden sm:rounded-xl">
+    <div class="px-4 py-5 sm:px-6 border-b border-[#ece9e8]">
+        <h3 class="text-lg leading-6 font-medium text-[#1c1b1b]">Mis Solicitudes</h3>
+        <p class="mt-1 max-w-2xl text-sm text-[#6b6b6b]">Solo lectura — haz clic en un ticket para ver su detalle.</p>
     </div>
 
     {% if tickets %}
         <ul class="divide-y divide-gray-200">
             {% for ticket in tickets %}
             <li>
-                <a href="{% url 'admin_dashboard:view_ticket' codigo=ticket.codigo %}" class="block hover:bg-gray-50">
+                        <a href="{% url 'admin_dashboard:view_ticket' codigo=ticket.codigo %}" class="block hover:bg-[#fff5f2]">
                     <div class="px-4 py-4 sm:px-6">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
                                 <div class="flex-shrink-0">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                         {% if ticket.estado == 'pendiente' %}bg-yellow-100 text-yellow-800
-                                        {% elif ticket.estado == 'en_proceso' %}bg-blue-100 text-blue-800
+                                        {% elif ticket.estado == 'en_proceso' %}bg-[#fff5f2] text-[#F95F2B]
                                         {% elif ticket.estado == 'resuelto' %}bg-green-100 text-green-800
                                         {% elif ticket.estado == 'cerrado' %}bg-gray-100 text-gray-800
                                         {% else %}bg-red-100 text-red-800{% endif %}">
@@ -110,7 +109,7 @@
                                 </div>
                                 <div class="ml-4">
                                     <div class="flex items-center">
-                                        <p class="text-sm font-medium text-blue-600 truncate">#{{ ticket.codigo }}</p>
+                                        <p class="text-sm font-medium text-[#F95F2B] truncate">#{{ ticket.codigo }}</p>
                                         <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                             {% if ticket.tipo_solicitud == 'P' %}bg-green-100 text-green-800
                                             {% elif ticket.tipo_solicitud == 'Q' %}bg-red-100 text-red-800
@@ -173,7 +172,7 @@
             <p class="mt-1 text-sm text-gray-500">Cuando ingreses una solicitud, aparecerá aquí.</p>
             <div class="mt-6">
                 <a href="{% url 'homepage:solicitud_usuario' %}"
-                   class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                   class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#F95F2B] hover:bg-[#ae3200]">
                     <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -212,7 +211,7 @@
                 {% endif %}
                 {% for num in tickets.paginator.page_range %}
                     {% if tickets.number == num %}
-                        <span class="bg-blue-50 border-blue-500 text-blue-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">{{ num }}</span>
+                        <span class="bg-[#fff5f2] border-[#F95F2B] text-[#F95F2B] relative inline-flex items-center px-4 py-2 border text-sm font-medium">{{ num }}</span>
                     {% elif num > tickets.number|add:'-3' and num < tickets.number|add:'3' %}
                         <a href="?page={{ num }}" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">{{ num }}</a>
                     {% endif %}

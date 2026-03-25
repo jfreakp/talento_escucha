@@ -8,13 +8,13 @@
     <div class="mb-6">
         <div class="flex justify-between items-start">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ ticket.codigo }}</h1>
-                <p class="text-gray-600">Ticket de {{ ticket.nombre_completo }} - {{ ticket.get_tipo_solicitud_display }}</p>
+                <h1 class="text-3xl font-bold text-[#1c1b1b] mb-2">{{ ticket.codigo }}</h1>
+                <p class="text-[#6b6b6b]">Ticket de {{ ticket.nombre_completo }} - {{ ticket.get_tipo_solicitud_display }}</p>
             </div>
             <div>
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
                     {% if ticket.estado == 'pendiente' %}bg-yellow-100 text-yellow-800
-                    {% elif ticket.estado == 'en_proceso' %}bg-blue-100 text-blue-800
+                    {% elif ticket.estado == 'en_proceso' %}bg-[#fff5f2] text-[#F95F2B]
                     {% elif ticket.estado == 'resuelto' %}bg-green-100 text-green-800
                     {% elif ticket.estado == 'cerrado' %}bg-gray-100 text-gray-800
                     {% elif ticket.estado == 'cancelado' %}bg-red-100 text-red-800
@@ -36,7 +36,7 @@
     </div>
 
     <!-- Tabs -->
-    <div class="bg-white rounded-lg shadow-lg">
+    <div class="bg-white rounded-xl border border-[#ece9e8]">
         <!-- Tab Navigation -->
         <div class="border-b border-gray-200">
             <nav class="-mb-px flex space-x-8" aria-label="Tabs">
@@ -121,7 +121,7 @@
                                 <dd class="text-sm text-gray-900">
                                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
                                         {% if ticket.estado == 'pendiente' %}bg-yellow-100 text-yellow-800
-                                        {% elif ticket.estado == 'en_proceso' %}bg-blue-100 text-blue-800
+                                        {% elif ticket.estado == 'en_proceso' %}bg-[#fff5f2] text-[#F95F2B]
                                         {% elif ticket.estado == 'resuelto' %}bg-green-100 text-green-800
                                         {% elif ticket.estado == 'cerrado' %}bg-gray-100 text-gray-800
                                         {% elif ticket.estado == 'cancelado' %}bg-red-100 text-red-800
@@ -153,9 +153,9 @@
                 </div>
 
                 {% if user|has_role:'ADMIN' and ticket.estado != 'resuelto' and ticket.estado != 'cerrado' and ticket.estado != 'cancelado' %}
-                <div class="mt-6 bg-indigo-50 border border-indigo-200 rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">
-                        <svg class="inline w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="mt-6 bg-[#fff5f2] border border-[#F95F2B]/20 rounded-xl p-6">
+                    <h3 class="text-lg font-medium text-[#1c1b1b] mb-4">
+                        <svg class="inline w-5 h-5 mr-2 text-[#F95F2B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                         </svg>
                         Asignar Ticket
@@ -166,7 +166,7 @@
                             <div class="flex-1 w-full">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Seleccionar Revisor</label>
                                 <select name="user_id" required
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                                        class="w-full px-3 py-2 border border-[#ece9e8] rounded-md focus:outline-none focus:ring-2 focus:ring-[#F95F2B]/30 focus:border-[#F95F2B] bg-white text-[#1c1b1b]">
                                     <option value="">-- Selecciona un revisor --</option>
                                     {% for revisor in revisores %}
                                     <option value="{{ revisor.id }}"
@@ -177,7 +177,7 @@
                                 </select>
                             </div>
                             <button type="submit"
-                                    class="px-5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-medium text-sm transition-colors whitespace-nowrap">
+                                    class="px-5 py-2 bg-[#F95F2B] text-white rounded-md hover:bg-[#ae3200] font-medium text-sm transition-colors whitespace-nowrap">
                                 Confirmar asignación
                             </button>
                         </div>
@@ -252,7 +252,7 @@
                                             <div>
                                                 <span class="h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white
                                                     {% if auditoria.operacion == 'CREATE' %}bg-green-500
-                                                    {% elif auditoria.operacion == 'ASSIGN' %}bg-indigo-500
+                                                    {% elif auditoria.operacion == 'ASSIGN' %}bg-[#F95F2B]
                                                     {% elif auditoria.operacion == 'REJECT' %}bg-red-500
                                                     {% elif auditoria.operacion == 'RESOLVE' %}bg-emerald-500
                                                     {% elif auditoria.operacion == 'UPDATE' %}bg-blue-500
@@ -342,14 +342,14 @@
         // Actualizar estilos de los botones de tab
         const buttons = document.querySelectorAll('.tab-button');
         buttons.forEach(button => {
-            button.classList.remove('border-blue-500', 'text-blue-600');
+            button.classList.remove('border-[#F95F2B]', 'text-[#F95F2B]');
             button.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
         });
         
         // Activar el botón del tab seleccionado
         const activeButton = document.getElementById('tab-' + tabName);
         activeButton.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
-        activeButton.classList.add('border-blue-500', 'text-blue-600');
+        activeButton.classList.add('border-[#F95F2B]', 'text-[#F95F2B]');
     }
 
     // Inicializar con el primer tab activo

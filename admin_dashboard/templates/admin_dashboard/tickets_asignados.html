@@ -5,24 +5,24 @@
 
 {% block content %}
 <div class="mb-6">
-    <h1 class="text-3xl font-bold text-gray-900">{{ page_title }}</h1>
-    <p class="text-gray-600 mt-2">{{ page_description }}</p>
+    <h1 class="text-3xl font-bold text-[#1c1b1b]">{{ page_title }}</h1>
+    <p class="text-[#6b6b6b] mt-2">{{ page_description }}</p>
 </div>
 
 <!-- Estadísticas rápidas -->
 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-    <div class="bg-blue-50 overflow-hidden shadow rounded-lg">
+    <div class="bg-[#fff5f2] overflow-hidden shadow rounded-lg">
         <div class="p-5">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <svg class="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="h-6 w-6 text-[#F95F2B]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-blue-700 truncate">Total Asignados</dt>
-                        <dd class="text-lg font-medium text-blue-900">{{ total_tickets }}</dd>
+                        <dt class="text-sm font-medium text-[#F95F2B] truncate">Total Asignados</dt>
+                        <dd class="text-lg font-medium text-[#1c1b1b]">{{ total_tickets }}</dd>
                     </dl>
                 </div>
             </div>
@@ -85,7 +85,7 @@
 </div>
 
 <!-- Lista de tickets -->
-<div class="bg-white shadow overflow-hidden sm:rounded-md">
+<div class="bg-white rounded-xl border border-[#ece9e8]">
     <div class="px-4 py-5 sm:px-6">
         <h3 class="text-lg leading-6 font-medium text-gray-900">
             {% if is_admin_view %}Tickets Asignados{% else %}Mis Tickets Asignados{% endif %}
@@ -102,15 +102,14 @@
     {% if tickets %}
         <ul class="divide-y divide-gray-200">
             {% for ticket in tickets %}
-            <li>
-                <a href="{% url 'admin_dashboard:view_ticket' codigo=ticket.codigo %}" class="block hover:bg-gray-50">
+                <a href="{% url 'admin_dashboard:view_ticket' codigo=ticket.codigo %}" class="block hover:bg-[#fff5f2]">
                     <div class="px-4 py-4 sm:px-6">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
                                 <div class="flex-shrink-0">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                         {% if ticket.estado == 'pendiente' %}bg-yellow-100 text-yellow-800
-                                        {% elif ticket.estado == 'en_proceso' %}bg-blue-100 text-blue-800
+                                        {% elif ticket.estado == 'en_proceso' %}bg-[#fff5f2] text-[#F95F2B]
                                         {% elif ticket.estado == 'resuelto' %}bg-green-100 text-green-800
                                         {% elif ticket.estado == 'cerrado' %}bg-gray-100 text-gray-800
                                         {% else %}bg-red-100 text-red-800{% endif %}">
@@ -119,7 +118,7 @@
                                 </div>
                                 <div class="ml-4">
                                     <div class="flex items-center">
-                                        <p class="text-sm font-medium text-blue-600 truncate">
+                                        <p class="text-sm font-medium text-[#F95F2B] truncate">
                                             #{{ ticket.codigo }}
                                         </p>
                                         <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
@@ -174,7 +173,7 @@
                                 <div class="flex items-center gap-2">
                                 {% if is_admin_view %}
                                     <a href="{% url 'admin_dashboard:view_ticket' codigo=ticket.codigo %}"
-                                       class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
+                                       class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-[#F95F2B] hover:bg-[#ae3200] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#F95F2B] transition duration-150 ease-in-out"
                                        onclick="event.stopPropagation()">
                                         <svg class="-ml-0.5 mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m10 0v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2m10 0H7" />
@@ -277,7 +276,7 @@
 
                 {% for num in tickets.paginator.page_range %}
                     {% if tickets.number == num %}
-                        <span aria-current="page" class="bg-blue-50 border-blue-500 text-blue-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        <span aria-current="page" class="bg-[#fff5f2] border-[#F95F2B] text-[#F95F2B] relative inline-flex items-center px-4 py-2 border text-sm font-medium">
                             {{ num }}
                         </span>
                     {% elif num > tickets.number|add:'-3' and num < tickets.number|add:'3' %}

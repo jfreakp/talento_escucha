@@ -5,12 +5,12 @@
 {% block content %}
     <!-- Header -->
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Buscar Ticket</h1>
-        <p class="text-gray-600">Busca un ticket ingresando su código único</p>
+        <h1 class="text-3xl font-bold text-[#1c1b1b] mb-2">Buscar Ticket</h1>
+        <p class="text-[#6b6b6b]">Busca un ticket ingresando su código único</p>
     </div>
 
     <!-- Formulario de búsqueda -->
-    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+    <div class="bg-white rounded-xl border border-[#ece9e8] p-6 mb-6">
         <form method="post" class="space-y-6">
             {% csrf_token %}
             
@@ -24,7 +24,7 @@
                            name="codigo" 
                            value="{{ codigo_buscado|default:'' }}"
                            required 
-                           class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400 text-lg"
+                           class="block w-full pl-10 pr-3 py-3 border border-[#ece9e8] rounded-lg focus:ring-[#F95F2B] focus:border-[#F95F2B] text-[#1c1b1b] placeholder-gray-400 text-lg focus:outline-none focus:ring-2 focus:ring-[#F95F2B]/30"
                            placeholder="Ejemplo: FAC123456"
                            maxlength="20">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -36,7 +36,7 @@
                 
                 <div class="mt-4">
                     <button type="submit" 
-                            class="w-full flex justify-center items-center px-4 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                            class="w-full flex justify-center items-center px-4 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-[#F95F2B] hover:bg-[#ae3200] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#F95F2B] transition-colors duration-200">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                         </svg>
@@ -69,16 +69,16 @@
     {% endif %}
 
     <!-- Información de ayuda -->
-    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <div class="bg-[#fff5f2] border border-[#F95F2B]/20 rounded-xl p-4">
         <div class="flex">
             <div class="flex-shrink-0">
-                <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                <svg class="h-5 w-5 text-[#F95F2B]" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                 </svg>
             </div>
             <div class="ml-3">
-                <h3 class="text-sm font-medium text-blue-800">¿Cómo buscar un ticket?</h3>
-                <div class="mt-2 text-sm text-blue-700">
+                <h3 class="text-sm font-medium text-[#F95F2B]">¿Cómo buscar un ticket?</h3>
+                <div class="mt-2 text-sm text-[#ae3200]">
                     <ul class="list-disc pl-5 space-y-1">
                         <li>Ingresa el código completo del ticket (ejemplo: FAC123456)</li>
                         <li>El código es único para cada ticket y aparece en todas las comunicaciones</li>
