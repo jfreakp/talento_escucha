@@ -377,3 +377,5 @@ Thumbs.db
 # Archivos de configuración específicos del proyecto
 secrets.json
 config.json
+.vercel
+.env*.local
