@@ -45,6 +45,28 @@
         .text-slate-300 textarea {
             color: #1a202c !important;
         }
+
+        @keyframes spin-loader {
+            to { transform: rotate(360deg); }
+        }
+
+        .global-loader-hidden {
+            display: none;
+        }
+
+        .global-loader-spinner {
+            width: 3rem;
+            height: 3rem;
+            border: 4px solid #d1d5db;
+            border-top-color: #2563eb;
+            border-radius: 9999px;
+            animation: spin-loader 0.8s linear infinite;
+        }
+
+        body.loader-active {
+            overflow: hidden;
+            cursor: wait;
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -440,7 +462,7 @@
            <div class="p-6 border-t border-slate-700">
             <!-- Perfil de Usuario - Solo para ADMIN y REVISOR -->
                 {% if user|has_role:'ADMIN' or user|has_role:'REVISOR' %}
-                    <div class="mt-6 pt-4 border-t border-slate-700">
+                    <div>
                         <a href="{% url 'admin_dashboard:perfil_usuario' %}" 
                            class="w-full px-2 inline-flex space-x-2 items-center border-b border-slate-700 py-3 hover:bg-white/5 transition ease-linear duration-150 {% if request.resolver_match.url_name == 'perfil_usuario' or request.resolver_match.url_name == 'cambiar_password' %}bg-blue-800{% endif %}">
                             <div>
@@ -477,6 +499,15 @@
                 {% endblock %}
             </div>
         </div>
+    </div>
+</div>
+
+<div id="global-action-loader" class="global-loader-hidden fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-sm items-center justify-center">
+    <div class="bg-white rounded-xl shadow-2xl px-8 py-6 text-center min-w-[280px]">
+        <div class="flex justify-center mb-4">
+            <div class="global-loader-spinner"></div>
+        </div>
+        <p id="global-loader-message" class="text-sm font-semibold text-slate-700">Procesando, por favor espera...</p>
     </div>
 </div>
 
@@ -566,6 +597,68 @@ document.addEventListener('DOMContentLoaded', function() {
         {% endfor %}
     });
 {% endif %}
+
+(function() {
+    const loader = document.getElementById('global-action-loader');
+    const loaderMessage = document.getElementById('global-loader-message');
+    let isLoaderVisible = false;
+
+    if (!loader || !loaderMessage) {
+        return;
+    }
+
+    function showGlobalLoader(message) {
+        loaderMessage.textContent = message || 'Procesando, por favor espera...';
+        loader.classList.remove('global-loader-hidden');
+        loader.classList.add('flex');
+        document.body.classList.add('loader-active');
+        isLoaderVisible = true;
+    }
+
+    function hideGlobalLoader() {
+        loader.classList.add('global-loader-hidden');
+        loader.classList.remove('flex');
+        document.body.classList.remove('loader-active');
+        isLoaderVisible = false;
+    }
+
+    function shouldHandleForm(form) {
+        if (!form || form.dataset.noLoader !== undefined) {
+            return false;
+        }
+        const method = (form.method || 'get').toLowerCase();
+        return method === 'post' || method === 'get';
+    }
+
+    window.showGlobalLoader = showGlobalLoader;
+    window.hideGlobalLoader = hideGlobalLoader;
+
+    document.addEventListener('submit', function(event) {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement) || !shouldHandleForm(form)) {
+            return;
+        }
+
+        const message = form.dataset.loaderMessage || 'Procesando, por favor espera...';
+        showGlobalLoader(message);
+    });
+
+    const nativeSubmit = HTMLFormElement.prototype.submit;
+    HTMLFormElement.prototype.submit = function patchedSubmit() {
+        if (shouldHandleForm(this) && !isLoaderVisible) {
+            showGlobalLoader(this.dataset.loaderMessage || 'Procesando, por favor espera...');
+        }
+        return nativeSubmit.call(this);
+    };
+
+    window.addEventListener('pageshow', function() {
+        hideGlobalLoader();
+    });
+
+    window.addEventListener('load', function() {
+        hideGlobalLoader();
+    });
+})();
 </script>
 
 </body>

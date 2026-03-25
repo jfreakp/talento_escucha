@@ -39,7 +39,7 @@
 
         <!-- Formulario de Filtros -->
         <div class="form-container p-4 mb-6 max-w-sm">
-            <form method="post" id="reporteForm">
+            <form method="post" id="reporteForm" data-no-loader data-loader-message="Procesando reporte...">
                 {% csrf_token %}
                 
                 <div class="filter-section p-4 mb-4">
@@ -141,8 +141,8 @@
                                 </select>
                             </div>
                             
-                            <!-- Input hidden para la acción de descarga -->
-                            <input type="hidden" id="accion_descarga" name="accion" value="descargar">
+                            <!-- Input hidden para la acción de descarga (se activa solo al confirmar descarga) -->
+                            <input type="hidden" id="accion_descarga" name="" value="">
                             
                             <!-- Botón de descarga -->
                             <div>
@@ -388,9 +388,17 @@
 <script>
 // Agregar validación básica de fechas y manejo de descargas
 document.getElementById('reporteForm').addEventListener('submit', function(e) {
+    const form = this;
+    const accionDescarga = document.getElementById('accion_descarga');
     const fechaDesde = document.getElementById('fecha_desde').value;
     const fechaHasta = document.getElementById('fecha_hasta').value;
     const accion = e.submitter ? e.submitter.value : 'buscar';
+
+    // Por defecto, limpiar acción de descarga para no interferir con búsquedas
+    if (accionDescarga) {
+        accionDescarga.name = '';
+        accionDescarga.value = '';
+    }
     
     // Validar fechas
     if (fechaDesde && fechaHasta && fechaDesde > fechaHasta) {
@@ -406,37 +414,50 @@ document.getElementById('reporteForm').addEventListener('submit', function(e) {
     
     // Si es descarga, cambiar la acción según el formato seleccionado
     if (e.submitter && e.submitter.id === 'btn_descargar') {
+        e.preventDefault();
         const formatoSelect = document.getElementById('formato_descarga');
-        const accionDescarga = document.getElementById('accion_descarga');
         
         if (formatoSelect && accionDescarga) {
             const formatoSeleccionado = formatoSelect.value;
-            accionDescarga.value = formatoSeleccionado;
+            let tipoFormato = 'PDF';
             
-            // Mostrar mensaje según el formato
             if (formatoSeleccionado === 'descargar') {
-                mostrarMensajeDescarga('PDF');
+                tipoFormato = 'PDF';
             } else if (formatoSeleccionado === 'descargar_excel') {
-                mostrarMensajeDescarga('Excel');
+                tipoFormato = 'Excel';
             } else if (formatoSeleccionado === 'descargar_txt') {
-                mostrarMensajeDescarga('TXT');
+                tipoFormato = 'TXT';
             }
+
+            Swal.fire({
+                title: `¿Descargar reporte en ${tipoFormato}?`,
+                text: 'Se generará y descargará el archivo con los filtros actuales.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#16a34a',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: `Sí, descargar ${tipoFormato}`,
+                cancelButtonText: 'Cancelar',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    accionDescarga.name = 'accion';
+                    accionDescarga.value = formatoSeleccionado;
+                    if (typeof window.showGlobalLoader === 'function') {
+                        window.showGlobalLoader(`Generando reporte ${tipoFormato}...`);
+                    }
+                    form.submit();
+                    setTimeout(() => {
+                        if (typeof window.hideGlobalLoader === 'function') {
+                            window.hideGlobalLoader();
+                        }
+                    }, 2500);
+                }
+            });
         }
     } else if (accion === 'buscar') {
-        // Mostrar loading para búsqueda
-        Swal.fire({
-            title: 'Buscando tickets...',
-            text: 'Por favor espera mientras se cargan los resultados',
-            allowOutsideClick: false,
-            showConfirmButton: false,
-            willOpen: () => {
-                Swal.showLoading();
-            }
-        });
-        
-        setTimeout(() => {
-            Swal.close();
-        }, 2000);
+        if (typeof window.showGlobalLoader === 'function') {
+            window.showGlobalLoader('Buscando tickets...');
+        }
     }
 });
 
@@ -448,11 +469,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (formatoSelect && btnDescargar && accionDescarga) {
         formatoSelect.addEventListener('change', function() {
-            const formato = this.value;
             const textoFormato = this.options[this.selectedIndex].text;
-            
-            // Actualizar el valor del input hidden
-            accionDescarga.value = formato;
             
             // Actualizar el texto del botón
             const iconoSvg = btnDescargar.querySelector('svg');
@@ -515,22 +532,5 @@ function buildPageUrl(pageNumber) {
     return '?' + params.toString();
 }
 
-// Función para mostrar mensaje de descarga
-function mostrarMensajeDescarga(tipo) {
-    Swal.fire({
-        title: `Generando reporte ${tipo.toUpperCase()}...`,
-        text: 'Por favor espera mientras se genera el archivo',
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        willOpen: () => {
-            Swal.showLoading();
-        }
-    });
-    
-    // Cerrar el loading después de un tiempo
-    setTimeout(() => {
-        Swal.close();
-    }, 3000);
-}
 </script>
 {% endblock %}

@@ -163,11 +163,20 @@ class SolicitudUsuarioViewTest(TestCase):
     def setUp(self):
         """Configuración inicial para las pruebas"""
         self.client = Client()
+        self.user_group, _ = Group.objects.get_or_create(name='USER')
         self.user = User.objects.create_user(
             username='testuser',
             email='test@example.com',
             password='testpass123'
         )
+        self.user.groups.add(self.user_group)
+        self.revisor = User.objects.create_user(
+            username='revisor_test',
+            email='revisor@example.com',
+            password='testpass123'
+        )
+        self.revisor_group, _ = Group.objects.get_or_create(name='REVISOR')
+        self.revisor.groups.add(self.revisor_group)
         
         # Crear agencia de prueba
         self.agencia = Agencia.objects.create(
@@ -179,19 +188,27 @@ class SolicitudUsuarioViewTest(TestCase):
         
         self.url = reverse('homepage:solicitud_usuario')
     
-    def test_solicitud_usuario_allows_anonymous(self):
-        """Prueba que la vista permita usuarios anónimos"""
+    def test_solicitud_usuario_redirects_anonymous_to_login(self):
+        """Prueba que la vista redirija usuarios anónimos al login"""
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)  # No redirect, permite acceso
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/auth/login/', response.url)
     
     def test_solicitud_usuario_get_with_login(self):
-        """Prueba GET con usuario autenticado"""
+        """Prueba GET con usuario autenticado y rol USER"""
         self.client.login(username='testuser', password='testpass123')
         response = self.client.get(self.url)
         
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Crear Nueva Solicitud')
         self.assertIn('form', response.context)
+
+    def test_solicitud_usuario_denies_authenticated_user_without_user_role(self):
+        """Prueba que usuarios sin rol USER no puedan acceder"""
+        self.client.login(username='revisor_test', password='testpass123')
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 403)
     
     def test_solicitud_usuario_post_valid_data(self):
         """Prueba POST con datos válidos"""
@@ -240,8 +257,8 @@ class SolicitudUsuarioViewTest(TestCase):
         # Verificar que hay errores en el formulario
         self.assertTrue(response.context['form'].errors)
     
-    def test_solicitud_usuario_post_anonymous_valid_data(self):
-        """Prueba POST con datos válidos para usuario anónimo"""
+    def test_solicitud_usuario_post_anonymous_redirects_to_login(self):
+        """Prueba POST anónimo redirige al login y no crea ticket"""
         form_data = {
             'nombre': 'Ana',
             'apellido': 'García',
@@ -254,25 +271,30 @@ class SolicitudUsuarioViewTest(TestCase):
         }
         
         response = self.client.post(self.url, data=form_data)
-        
-        # Verificar redirección después de éxito
+
         self.assertEqual(response.status_code, 302)
-        
-        # Verificar que el ticket se creó
-        ticket = Ticket.objects.first()
-        self.assertIsNotNone(ticket)
-        self.assertEqual(ticket.nombre, 'Ana')
-        self.assertIsNone(ticket.usuario_crea)  # Usuario anónimo
-        self.assertEqual(ticket.estado, 'pendiente')
+        self.assertIn('/auth/login/', response.url)
+        self.assertEqual(Ticket.objects.count(), 0)
     
-    def test_solicitud_usuario_get_anonymous(self):
-        """Prueba GET para usuario anónimo"""
-        response = self.client.get(self.url)
-        
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Crear Nueva Solicitud')
-        self.assertContains(response, 'sin necesidad de registrarte')
-        self.assertIn('form', response.context)
+    def test_solicitud_usuario_post_without_user_role_returns_403(self):
+        """Prueba POST con usuario autenticado sin rol USER retorna 403"""
+        self.client.login(username='revisor_test', password='testpass123')
+
+        form_data = {
+            'nombre': 'Ana',
+            'apellido': 'García',
+            'correo': 'ana@example.com',
+            'telefono': '+0987654321',
+            'agencia': self.agencia.id,
+            'tipo_solicitud': 'P',
+            'severidad': 'M',
+            'descripcion': 'Petición desde usuario sin rol USER'
+        }
+
+        response = self.client.post(self.url, data=form_data)
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Ticket.objects.count(), 0)
 
 
 @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')

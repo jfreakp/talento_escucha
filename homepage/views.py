@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from tickets.forms import TicketForm, TicketAnonimForm
 from tickets.models import Ticket
 from tickets.pdf_utils import generar_pdf_ticket_anonimo
@@ -24,7 +25,10 @@ def sobre_nosotros(request):
 
 @login_required(login_url='/auth/login/')
 def solicitud_usuario(request):
-    """Página de solicitud para usuarios registrados (requiere autenticación)"""
+    """Página de solicitud para usuarios autenticados con rol USER."""
+    if not request.user.groups.filter(name='USER').exists():
+        raise PermissionDenied("Solo los usuarios con rol USER pueden crear solicitudes registradas")
+
     user = request.user
     
     if request.method == 'POST':
