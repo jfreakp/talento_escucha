@@ -8,12 +8,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="preconnect" href="https://rsms.me/">
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#F95F2B',
+                        panelbg: '#f8f9fa'
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root { font-family: 'Inter', sans-serif; }
-        @supports (font-variation-settings: normal) {
-            :root { font-family: 'Inter var', sans-serif; }
+        :root { font-family: 'Manrope', sans-serif; }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
         
         /* Estilos globales para inputs - Forzar texto negro */
@@ -58,7 +71,7 @@
             width: 3rem;
             height: 3rem;
             border: 4px solid #d1d5db;
-            border-top-color: #2563eb;
+            border-top-color: #F95F2B;
             border-radius: 9999px;
             animation: spin-loader 0.8s linear infinite;
         }
@@ -67,28 +80,74 @@
             overflow: hidden;
             cursor: wait;
         }
+
+        /* Re-skin del sidebar al estilo plantilla nueva sin tocar la logica de roles */
+        #menu {
+            background: #ffffff;
+            border-right: 1px solid #f0f0f0;
+            color: #1c1b1b;
+        }
+
+        #menu .text-slate-500,
+        #menu .text-slate-400 {
+            color: #6b7280 !important;
+        }
+
+        #menu .text-slate-300 {
+            color: #1c1b1b !important;
+            opacity: 0.72;
+        }
+
+        #menu .border-slate-700 {
+            border-color: #f1f5f9 !important;
+        }
+
+        #menu .hover\:bg-white\/5:hover {
+            background-color: #fff5f2 !important;
+        }
+
+        #menu .bg-blue-800,
+        #menu .bg-blue-700 {
+            background-color: #fff5f2 !important;
+            border-radius: 0.75rem;
+        }
+
+        #menu .bg-blue-800 .text-white,
+        #menu .bg-blue-700 .text-white,
+        #menu .bg-blue-800 svg,
+        #menu .bg-blue-700 svg {
+            color: #F95F2B !important;
+            stroke: currentColor;
+        }
+
+        #menu #nav > a,
+        #menu #nav > div > button {
+            border-bottom-width: 0;
+            border-radius: 9999px;
+            margin-bottom: 0.25rem;
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-<div class="bg-slate-100 overflow-y-scroll w-screen h-screen antialiased text-slate-300 selection:bg-blue-600 selection:text-white">
-    <div class="flex flex-col relative w-screen">
+<div class="bg-white w-screen h-screen antialiased text-[#1c1b1b] selection:bg-[#F95F2B] selection:text-white overflow-hidden">
+    <div class="flex relative w-screen h-screen">
         <!-- Sidebar -->
-        <div id="menu" class="bg-gray-900 min-h-screen z-10 text-slate-300 w-64 fixed left-0 h-screen flex flex-col justify-between">
+        <div id="menu" class="hidden md:flex z-20 w-64 fixed left-0 h-screen flex-col justify-between py-6">
            <!-- Top Section -->
            <div class="flex flex-col">
                <!-- Logo -->
-               <div id="logo" class="my-4 px-6">
-                <h1 class="text-lg md:text-2xl font-bold text-white">Talento<span class="text-blue-500">Escucha</span></h1>
-                <p class="text-slate-500 text-sm">Sistema PQRS - Dashboard</p>
+               <div id="logo" class="px-8 mb-8">
+                <h1 class="text-xl font-black tracking-tighter uppercase text-[#1c1b1b]">Talento Escucha</h1>
+                <p class="uppercase text-[10px] tracking-[0.08em] font-bold text-slate-500">Soporte Empresarial</p>
                </div>
                
                <!-- Profile Section -->
-               <div id="profile" class="px-6 py-10">
+               <div id="profile" class="px-8 py-6 border-y border-slate-100 mb-3">
                 <p class="text-slate-500">Bienvenido,</p>
                 <a href="#" class="inline-flex space-x-2 items-center">
                     <span>
-                        <div class="rounded-full w-8 h-8 bg-blue-600 flex items-center justify-center text-white font-bold">
+                        <div class="rounded-full w-8 h-8 bg-[#F95F2B] flex items-center justify-center text-white font-bold">
                             {{ user.first_name|first|default:user.username|first|upper }}
                         </div>
                     </span>
@@ -99,7 +158,7 @@
                </div>
                
                <!-- Navigation Section -->
-               <div id="nav" class="w-full px-6">
+               <div id="nav" class="w-full px-4">
                 
                 <!-- NAVEGACIÓN CONDICIONAL BASADA EN ROLES -->
                 {% if user|has_role:'ADMIN' %}
@@ -459,7 +518,7 @@
            </div>
            
            <!-- Bottom Section: Logout -->
-           <div class="p-6 border-t border-slate-700">
+           <div class="p-4 border-t border-slate-100">
             <!-- Perfil de Usuario - Solo para ADMIN y REVISOR -->
                 {% if user|has_role:'ADMIN' or user|has_role:'REVISOR' %}
                     <div>
@@ -477,7 +536,7 @@
                         </a>
                     </div>
                 {% endif %}
-            <a href="{% url 'auth_app:logout' %}" class="w-full px-2 inline-flex space-x-2 items-center py-3 hover:bg-white/5 transition ease-linear duration-150 rounded-lg">
+            <a href="{% url 'auth_app:logout' %}" class="w-full px-3 inline-flex space-x-2 items-center py-3 hover:bg-[#fff5f2] transition ease-linear duration-150 rounded-full">
                 <div>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
@@ -492,11 +551,28 @@
         </div>
         
         <!-- Main Content Area -->
-        <div class="ml-64 flex-1 p-8">
-            <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="md:ml-64 flex-1 bg-white h-screen overflow-y-auto">
+            <header class="h-16 flex justify-between items-center px-6 md:px-8 border-b border-gray-100 sticky top-0 bg-white z-10">
+                <div>
+                    <h1 class="text-lg md:text-xl font-black tracking-tighter uppercase text-[#1c1b1b]">Panel de Administrador</h1>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="p-2 rounded-full hover:bg-gray-50 transition-colors relative" aria-label="Notificaciones">
+                        <span class="material-symbols-outlined text-[#1c1b1b]">notifications</span>
+                        <span class="absolute top-2 right-2 w-2 h-2 bg-[#F95F2B] rounded-full border border-white"></span>
+                    </button>
+                    <a href="{% url 'admin_dashboard:perfil_usuario' %}" class="h-8 w-8 rounded-full bg-gray-200 border-2 border-[#F95F2B] flex items-center justify-center text-xs font-bold text-[#1c1b1b]">
+                        {{ user.first_name|first|default:user.username|first|upper }}
+                    </a>
+                </div>
+            </header>
+
+            <div class="p-6 md:p-8 bg-panelbg min-h-[calc(100vh-4rem)]">
+            <div class="bg-white rounded-xl border border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.03)] p-6">
                 {% block content %}
                 <!-- El contenido específico de cada página se insertará aquí -->
                 {% endblock %}
+            </div>
             </div>
         </div>
     </div>

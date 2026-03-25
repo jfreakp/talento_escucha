@@ -1,523 +1,231 @@
 {% extends 'admin_dashboard/base.html' %}
 
-{% block title %}Mi Perfil{% endblock %}
+{% block title %}Mi Perfil - Talento Escucha{% endblock %}
 
 {% block extra_css %}
 <style>
-    .profile-card {
-        background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #1e40af 100%);
-        border-radius: 20px;
-        padding: 2.5rem;
-        color: white;
-        box-shadow: 0 25px 50px rgba(31, 41, 55, 0.4);
-        position: relative;
-        overflow: hidden;
+    .profile-shell {
+        background: #fcf9f8;
     }
-    
-    .profile-card::before {
+
+    .profile-card-dark {
+        background: #1c1b1b;
+        color: #ffffff;
+        border-radius: 1rem;
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .profile-card-dark::after {
         content: '';
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+        top: -70px;
+        right: -60px;
+        width: 180px;
+        height: 180px;
+        border-radius: 9999px;
+        background: rgba(249, 95, 43, 0.25);
+        filter: blur(28px);
         pointer-events: none;
     }
-    
-    .profile-avatar {
-        width: 120px;
-        height: 120px;
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 3rem;
-        margin: 0 auto 1.5rem;
-        border: 4px solid rgba(255,255,255,0.4);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        color: white;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    }
-    
-    .info-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        border-radius: 16px;
-        padding: 2rem;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-        border: 1px solid #e2e8f0;
-        border-left: 5px solid #2563eb;
-        position: relative;
-    }
-    
-    .info-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 100px;
-        height: 100px;
-        background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-        opacity: 0.05;
-        border-radius: 50%;
-        transform: translate(30px, -30px);
-    }
-    
-    .form-group {
-        margin-bottom: 1.5rem;
-        position: relative;
-    }
-    
-    .form-label {
+
+    .field-label {
         display: block;
-        margin-bottom: 0.75rem;
-        font-weight: 700;
-        color: #1e293b;
-        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        color: #6b7280;
     }
-    
-    .form-input {
-        width: 100% !important;
-        padding: 1rem 1.25rem !important;
-        border: 2px solid #e2e8f0 !important;
-        border-radius: 12px !important;
-        font-size: 1rem !important;
-        transition: all 0.3s ease !important;
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
-        color: #1a202c !important;
-        font-weight: 500 !important;
-    }
-    
-    /* Estilos específicos para inputs de Django */
-    input[type="text"].form-input,
-    input[type="email"].form-input,
-    input[type="password"].form-input {
-        color: #1a202c !important;
-        background: #ffffff !important;
-    }
-    
-    .form-input:focus {
-        outline: none !important;
-        border-color: #2563eb !important;
-        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1) !important;
-        background: #ffffff !important;
-        transform: translateY(-2px) !important;
-        color: #1a202c !important;
-    }
-    
-    .form-input::placeholder {
-        color: #94a3b8 !important;
-        font-weight: 400 !important;
-    }
-    
-    /* Estilos específicos para los campos de Django Forms */
+
+    .profile-input,
+    .profile-input:focus,
     #id_first_name,
     #id_last_name,
-    #id_username,
-    #id_email {
-        color: #1a202c !important;
-        background: #ffffff !important;
-        border: 2px solid #e2e8f0 !important;
-        border-radius: 12px !important;
-        padding: 1rem 1.25rem !important;
-        font-size: 1rem !important;
-        font-weight: 500 !important;
-    }
-    
+    #id_email,
     #id_first_name:focus,
     #id_last_name:focus,
-    #id_username:focus,
     #id_email:focus {
-        color: #1a202c !important;
-        background: #ffffff !important;
-        border-color: #2563eb !important;
-        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1) !important;
-    }
-    
-    .btn-primary {
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%);
-        color: white;
-        padding: 1rem 2.5rem;
+        width: 100%;
         border: none;
-        border-radius: 12px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        display: inline-block;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
-    }
-    
-    .btn-primary:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 30px rgba(37, 99, 235, 0.4);
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
-    }
-    
-    .btn-secondary {
-        background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
-        color: white;
-        padding: 0.875rem 1.75rem;
-        border: none;
-        border-radius: 12px;
+        border-bottom: 2px solid #d6d4d3;
+        border-radius: 0;
+        background: transparent;
+        padding: 0.5rem 0;
+        color: #1c1b1b !important;
         font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        display: inline-block;
-        margin-left: 1rem;
-        box-shadow: 0 6px 15px rgba(55, 65, 81, 0.3);
+        outline: none;
+        box-shadow: none;
     }
-    
-    .btn-secondary:hover {
-        background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(55, 65, 81, 0.4);
+
+    .profile-input:focus,
+    #id_first_name:focus,
+    #id_last_name:focus,
+    #id_email:focus {
+        border-bottom-color: #f95f2b;
     }
-    
-    .alert {
-        padding: 1rem;
-        border-radius: 8px;
-        margin-bottom: 1rem;
-        border-left: 4px solid;
-    }
-    
-    .alert-success {
-        background-color: #d1fae5;
-        border-color: #10b981;
-        color: #065f46;
-    }
-    
-    .alert-error {
-        background-color: #fee2e2;
-        border-color: #ef4444;
-        color: #991b1b;
-    }
-    
-    .role-badge {
-        display: inline-block;
-        padding: 0.5rem 1.25rem;
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        border-radius: 25px;
-        font-size: 0.875rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: white;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
-    }
-    
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-        margin-top: 1.5rem;
-    }
-    
-    @media (max-width: 768px) {
-        .stats-grid {
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-    }
-    
-    .stat-item {
-        background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
-        padding: 1.5rem;
-        border-radius: 16px;
-        text-align: center;
-        border: 1px solid rgba(255,255,255,0.2);
-        backdrop-filter: blur(10px);
-        transition: all 0.3s ease;
-    }
-    
-    .stat-item:hover {
-        transform: translateY(-5px);
-        background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.2) 100%);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
-    
-    .stat-number {
-        font-size: 2rem;
-        font-weight: 900;
-        display: block;
-        color: #60a5fa;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        margin-bottom: 0.5rem;
-    }
-    
-    .stat-label {
-        font-size: 0.875rem;
-        opacity: 0.9;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
+
+    .readonly-field {
+        border-bottom-color: #ece9e8 !important;
+        color: #7b7a79 !important;
+        opacity: 0.8;
+        cursor: not-allowed;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-6">
-    <!-- Header -->
-    <div class="mb-8">
-        <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-800 via-blue-600 to-blue-800 bg-clip-text text-transparent mb-3">
-            <i class="fas fa-user-circle mr-3 text-blue-600"></i>
-            Mi Perfil
-        </h1>
-        <p class="text-slate-600 text-lg font-medium">Gestiona tu información personal y configuración de la cuenta</p>
-    </div>
-
-    <!-- Mensajes de éxito/error -->
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-triangle{% endif %} mr-2"></i>
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Tarjeta de Perfil -->
-        <div class="lg:col-span-1">
-            <div class="profile-card">
-                <div class="profile-avatar">
-                    {% if user.first_name and user.last_name %}
-                        {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
-                    {% elif user.first_name %}
-                        {{ user.first_name|first|upper }}{{ user.first_name|slice:"1:2"|upper }}
-                    {% elif user.last_name %}
-                        {{ user.last_name|first|upper }}{{ user.last_name|slice:"1:2"|upper }}
-                    {% else %}
-                        {{ user.username|first|upper }}{{ user.username|slice:"1:2"|upper }}
-                    {% endif %}
-                </div>
-                <div class="text-center">
-                    <h2 class="text-2xl font-bold mb-2">{{ user.get_full_name|default:user.username }}</h2>
-                    <p class="text-lg opacity-90 mb-3">{{ user.email }}</p>
-                    <span class="role-badge">{{ user_role|default:"Usuario" }}</span>
-                </div>
-                
-                <!-- Estadísticas del usuario -->
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <span class="stat-number">{{ tickets_asignados|default:0 }}</span>
-                        <span class="stat-label">
-                            {% if 'ADMIN' in user_roles %}
-                                Total Tickets
-                            {% else %}
-                                Tickets Asignados
-                            {% endif %}
-                        </span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">{{ tickets_resueltos|default:0 }}</span>
-                        <span class="stat-label">Tickets Resueltos</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">{{ tickets_pendientes|default:0 }}</span>
-                        <span class="stat-label">
-                            {% if 'ADMIN' in user_roles %}
-                                Tickets Pendientes
-                            {% else %}
-                                Mis Pendientes
-                            {% endif %}
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="mt-6 text-center">
-                    <a href="{% url 'admin_dashboard:cambiar_password' %}" class="btn-secondary">
-                        <i class="fas fa-key mr-2"></i>
-                        Cambiar Contraseña
-                    </a>
-                </div>
-            </div>
+<div class="profile-shell -m-6 p-6 md:p-10 rounded-xl">
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-10">
+            <h1 class="text-[#1c1b1b] text-4xl md:text-5xl font-extrabold leading-tight tracking-tight">Configuracion de Cuenta</h1>
+            <p class="text-[#474747] text-base md:text-lg mt-2">Administra tu informacion personal y preferencias del sistema.</p>
         </div>
 
-        <!-- Formulario de Edición -->
-        <div class="lg:col-span-2">
-            <div class="info-card">
-                <h3 class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-blue-600 bg-clip-text text-transparent mb-6">
-                    <i class="fas fa-edit mr-3 text-blue-600"></i>
-                    Información Personal
-                </h3>
-                
-                <form method="post" class="space-y-4">
-                    {% csrf_token %}
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="form-group">
-                            <label for="{{ form.first_name.id_for_label }}" class="form-label">
-                                <i class="fas fa-user mr-2 text-gray-500"></i>
-                                Nombres
-                            </label>
-                            {{ form.first_name }}
-                            {% if form.first_name.errors %}
-                                <div class="text-red-500 text-sm mt-1">
-                                    {% for error in form.first_name.errors %}
-                                        <p>{{ error }}</p>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="{{ form.last_name.id_for_label }}" class="form-label">
-                                <i class="fas fa-user mr-2 text-gray-500"></i>
-                                Apellidos
-                            </label>
-                            {{ form.last_name }}
-                            {% if form.last_name.errors %}
-                                <div class="text-red-500 text-sm mt-1">
-                                    {% for error in form.last_name.errors %}
-                                        <p>{{ error }}</p>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
+        {% if messages %}
+            <div class="space-y-3 mb-8">
+                {% for message in messages %}
+                    <div class="rounded-xl px-4 py-3 border {% if message.tags == 'error' %}bg-red-50 border-red-200 text-red-800{% elif message.tags == 'success' %}bg-green-50 border-green-200 text-green-800{% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %}">
+                        <p class="text-sm font-semibold">{{ message }}</p>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="{{ form.username.id_for_label }}" class="form-label">
-                            <i class="fas fa-at mr-2 text-gray-500"></i>
-                            Nombre de Usuario
-                        </label>
-                        {{ form.username }}
-                        {% if form.username.errors %}
-                            <div class="text-red-500 text-sm mt-1">
-                                {% for error in form.username.errors %}
-                                    <p>{{ error }}</p>
-                                {% endfor %}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+            <div class="lg:col-span-4 flex flex-col gap-6">
+                <div class="profile-card-dark p-8 md:p-10">
+                    <div class="relative z-10 flex flex-col items-center text-center">
+                        <div class="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-[#F95F2B] p-1 mb-6 bg-white/10">
+                            <div class="w-full h-full rounded-full bg-[#2f2e2d] flex items-center justify-center text-3xl md:text-4xl font-black text-white">
+                                {% if user.first_name and user.last_name %}
+                                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                                {% elif user.first_name %}
+                                    {{ user.first_name|first|upper }}{{ user.first_name|slice:"1:2"|upper }}
+                                {% elif user.last_name %}
+                                    {{ user.last_name|first|upper }}{{ user.last_name|slice:"1:2"|upper }}
+                                {% else %}
+                                    {{ user.username|first|upper }}{{ user.username|slice:"1:2"|upper }}
+                                {% endif %}
                             </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="{{ form.email.id_for_label }}" class="form-label">
-                            <i class="fas fa-envelope mr-2 text-gray-500"></i>
-                            Correo Electrónico
-                        </label>
-                        {{ form.email }}
-                        {% if form.email.errors %}
-                            <div class="text-red-500 text-sm mt-1">
-                                {% for error in form.email.errors %}
-                                    <p>{{ error }}</p>
-                                {% endfor %}
+                        </div>
+
+                        <h2 class="text-2xl font-bold tracking-tight mb-1">{{ user.get_full_name|default:user.username }}</h2>
+                        <p class="text-sm opacity-70 font-medium mb-4">{{ user.email|default:'sin-correo@empresa.com' }}</p>
+
+                        <span class="inline-block px-4 py-1 rounded-full bg-white/10 text-[10px] font-black tracking-[0.2em] uppercase mb-8">
+                            {{ user_role|default:'Usuario' }}
+                        </span>
+
+                        <div class="w-full grid grid-cols-3 gap-2 mb-8">
+                            <div class="text-center">
+                                <div class="text-[#F95F2B] text-xl font-extrabold">{{ tickets_asignados|default:0 }}</div>
+                                <div class="text-[9px] uppercase tracking-widest opacity-60">Total</div>
                             </div>
-                        {% endif %}
-                    </div>
-                    
-                    <!-- Información adicional de solo lectura -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-6 border-t border-gray-200">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-calendar-alt mr-2 text-gray-500"></i>
-                                Fecha de Registro
-                            </label>
-                            <input type="text" value="{{ user.date_joined|date:'d/m/Y H:i' }}" 
-                                   class="form-input bg-gray-100" readonly>
+                            <div class="text-center border-x border-white/10">
+                                <div class="text-[#F95F2B] text-xl font-extrabold">{{ tickets_resueltos|default:0 }}</div>
+                                <div class="text-[9px] uppercase tracking-widest opacity-60">Resueltos</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-[#F95F2B] text-xl font-extrabold">{{ tickets_pendientes|default:0 }}</div>
+                                <div class="text-[9px] uppercase tracking-widest opacity-60">Pendientes</div>
+                            </div>
                         </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-clock mr-2 text-gray-500"></i>
-                                Último Acceso
-                            </label>
-                            <input type="text" value="{{ user.last_login|date:'d/m/Y H:i'|default:'Nunca' }}" 
-                                   class="form-input bg-gray-100" readonly>
-                        </div>
+
+                        <a href="{% url 'admin_dashboard:cambiar_password' %}" class="w-full py-3 border border-white/20 hover:border-[#F95F2B] hover:text-[#F95F2B] rounded-xl font-bold uppercase text-[0.7rem] tracking-widest transition-all text-center">
+                            Cambiar Contrasena
+                        </a>
                     </div>
+                </div>
+
+                <div class="bg-[#f6f3f2] p-6 rounded-xl border border-[#ece9e8]">
+                    <h3 class="font-bold text-xs uppercase tracking-widest mb-3">Seguridad</h3>
                     
-                    <div class="flex justify-end mt-6">
-                        <button type="submit" class="btn-primary">
-                            <i class="fas fa-save mr-2"></i>
-                            Guardar Cambios
-                        </button>
+                    <div class="flex items-center justify-between py-3">
+                        <span class="text-sm text-[#5f5e5e]">Ultimo acceso</span>
+                        <span class="text-xs font-bold uppercase text-[#1c1b1b]">{{ user.last_login|date:'d/m/Y H:i'|default:'Nunca' }}</span>
                     </div>
-                </form>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8">
+                <div class="bg-white p-8 md:p-10 lg:p-14 rounded-xl border border-[#ece9e8] shadow-[0_4px_14px_rgba(0,0,0,0.04)]">
+                    <div class="flex items-center gap-4 mb-10">
+                        <div class="h-px flex-1 bg-[#ece9e8]"></div>
+                        <h3 class="font-bold text-xs uppercase tracking-[0.3em] text-[#F95F2B]">Informacion Personal</h3>
+                        <div class="h-px flex-1 bg-[#ece9e8]"></div>
+                    </div>
+
+                    <form method="post" class="space-y-10" data-loader-message="Guardando cambios del perfil...">
+                        {% csrf_token %}
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
+                            <div>
+                                <label for="{{ form.first_name.id_for_label }}" class="field-label">Nombres</label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <div class="text-red-600 text-sm mt-1">{{ form.first_name.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div>
+                                <label for="{{ form.last_name.id_for_label }}" class="field-label">Apellidos</label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <div class="text-red-600 text-sm mt-1">{{ form.last_name.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div>
+                                <label class="field-label">Nombre de Usuario</label>
+                                <input type="text" value="{{ user.username }}" class="profile-input readonly-field" readonly>
+                            </div>
+
+                            <div>
+                                <label for="{{ form.email.id_for_label }}" class="field-label">Correo Electronico</label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-red-600 text-sm mt-1">{{ form.email.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div>
+                                <label class="field-label">Fecha de Registro</label>
+                                <input type="text" value="{{ user.date_joined|date:'d/m/Y H:i' }}" class="profile-input readonly-field" readonly>
+                            </div>
+
+                            <div>
+                                <label class="field-label">Ultimo Acceso</label>
+                                <input type="text" value="{{ user.last_login|date:'d/m/Y H:i'|default:'Nunca' }}" class="profile-input readonly-field" readonly>
+                            </div>
+                        </div>
+
+                        <div class="pt-6 flex justify-end">
+                            <button type="submit" class="bg-[#F95F2B] hover:bg-[#ae3200] text-white px-10 py-4 rounded-xl font-extrabold uppercase text-[0.75rem] tracking-[0.2em] shadow-xl shadow-[#F95F2B]/30 active:scale-95 transition-all">
+                                Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
             </div>
         </div>
     </div>
 </div>
 
 <script>
-// Validación en tiempo real
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
-    const inputs = form.querySelectorAll('.form-input');
-    
-    // Forzar estilos de color en todos los inputs inmediatamente
-    inputs.forEach(input => {
-        input.style.color = '#1a202c !important';
-        input.style.backgroundColor = '#ffffff !important';
-        input.style.setProperty('color', '#1a202c', 'important');
-        input.style.setProperty('background-color', '#ffffff', 'important');
+document.addEventListener('DOMContentLoaded', function () {
+    const managedFields = ['id_first_name', 'id_last_name', 'id_email'];
+    managedFields.forEach(function (id) {
+        const field = document.getElementById(id);
+        if (!field) return;
+
+        field.classList.add('profile-input');
+        field.style.setProperty('color', '#1c1b1b', 'important');
+        field.style.setProperty('background-color', 'transparent', 'important');
     });
-    
-    // También aplicar a inputs por ID específico
-    const specificInputs = ['id_first_name', 'id_last_name', 'id_username', 'id_email'];
-    specificInputs.forEach(id => {
-        const input = document.getElementById(id);
-        if (input) {
-            input.style.setProperty('color', '#1a202c', 'important');
-            input.style.setProperty('background-color', '#ffffff', 'important');
-        }
-    });
-    
-    inputs.forEach(input => {
-        input.addEventListener('blur', function() {
-            if (this.value.trim() === '' && this.hasAttribute('required')) {
-                this.style.borderColor = '#ef4444';
-            } else {
-                this.style.borderColor = '#e2e8f0';
-            }
-            // Asegurar que el texto siempre sea negro
-            this.style.color = '#1a202c';
-            this.style.backgroundColor = '#ffffff';
-        });
-        
-        input.addEventListener('focus', function() {
-            this.style.borderColor = '#2563eb';
-            this.style.color = '#1a202c';
-            this.style.backgroundColor = '#ffffff';
-        });
-        
-        // Asegurar que el texto sea negro en todos los inputs al cargar la página
-        input.style.color = '#1a202c';
-        input.style.backgroundColor = '#ffffff';
-    });
-    
-    // Validación del email
-    const emailInput = document.getElementById('id_email');
-    if (emailInput) {
-        emailInput.addEventListener('blur', function() {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(this.value) && this.value.trim() !== '') {
-                this.style.borderColor = '#ef4444';
-                // Mostrar mensaje de error si no existe
-                let errorMsg = this.parentNode.querySelector('.email-error');
-                if (!errorMsg) {
-                    errorMsg = document.createElement('div');
-                    errorMsg.className = 'text-red-500 text-sm mt-1 email-error';
-                    errorMsg.textContent = 'Por favor ingrese un email válido';
-                    this.parentNode.appendChild(errorMsg);
-                }
-            } else {
-                this.style.borderColor = '#e5e7eb';
-                const errorMsg = this.parentNode.querySelector('.email-error');
-                if (errorMsg) {
-                    errorMsg.remove();
-                }
-            }
-        });
-    }
 });
 </script>
 {% endblock %}
