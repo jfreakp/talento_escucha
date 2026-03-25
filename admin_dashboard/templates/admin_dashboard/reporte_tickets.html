@@ -6,24 +6,14 @@
 <style>
     .form-container {
         background: white;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        border: 1px solid #ece9e8;
     }
     
     .filter-section {
-        background: #f8fafc;
-        border-radius: 8px;
-        border: 1px solid #e2e8f0;
-    }
-    
-    .btn-generate {
-        background: linear-gradient(135deg, #F95F2B 0%, #ae3200 100%);
-        transition: all 0.3s ease;
-    }
-    
-    .btn-generate:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(249, 95, 43, 0.3);
+        background: #fcf9f8;
+        border-radius: 10px;
+        border: 1px solid #ece9e8;
     }
 </style>
 {% endblock %}
@@ -33,8 +23,9 @@
     <div class="w-full">
         <!-- Encabezado -->
         <div class="mb-8">
+            <p class="text-xs font-semibold uppercase tracking-wider text-[#F95F2B] mb-1">Talento Escucha</p>
             <h1 class="text-3xl font-bold text-[#1c1b1b] mb-2">Reporte de Tickets</h1>
-            <p class="text-[#6b6b6b]">Genera reportes en PDF de los tickets con filtros personalizados</p>
+            <p class="text-[#6b6b6b]">Genera reportes en PDF, Excel o TXT con filtros personalizados</p>
         </div>
 
         <!-- Formulario de Filtros -->
@@ -148,7 +139,7 @@
                             <div>
                                 <button type="submit" 
                                         id="btn_descargar"
-                                        class="w-full inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition duration-200">
+                                        class="w-full inline-flex items-center justify-center px-4 py-2 bg-[#1c1b1b] text-white text-sm font-medium rounded hover:bg-black transition duration-200">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
@@ -166,16 +157,16 @@
         {% if mostrar_resultados %}
         <div class="form-container p-8 mb-8">
             <div class="mb-6">
-                <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                    <svg class="w-6 h-6 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <h3 class="text-xl font-semibold text-[#1c1b1b] mb-4 flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-[#F95F2B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    Resultados Encontrados ({{ total_tickets }} tickets)
+                    Resultados encontrados &mdash; <span class="ml-1 text-[#F95F2B]">{{ total_tickets }} tickets</span>
                 </h3>
                 
                 <!-- Información de filtros aplicados -->
                 {% if filtros_aplicados.fecha_desde or filtros_aplicados.fecha_hasta or filtros_aplicados.estado != 'todos' or filtros_aplicados.tipo_solicitud != 'todos' or filtros_aplicados.agencia != 'todas' %}
-                <div class="bg-[#fff5f2] border-l-4 border-[#F95F2B] p-3 mb-4 rounded-r-lg">
+                <div class="bg-[#fff5f2] border border-[#F95F2B]/20 p-3 mb-4 rounded-xl">
                     <p class="text-sm text-[#ae3200]">
                         <strong>Filtros aplicados:</strong>
                         {% if filtros_aplicados.fecha_desde %}Fecha desde: {{ filtros_aplicados.fecha_desde }} | {% endif %}
@@ -362,7 +353,7 @@
         {% endif %}
 
         <!-- Información adicional -->
-        <div class="bg-[#fff5f2] border-l-4 border-[#F95F2B] p-4 rounded-r-lg">
+        <div class="bg-[#fff5f2] border border-[#F95F2B]/20 p-4 rounded-xl">
             <div class="flex">
                 <div class="flex-shrink-0">
                     <svg class="h-5 w-5 text-[#F95F2B]" fill="currentColor" viewBox="0 0 20 20">
@@ -370,8 +361,8 @@
                     </svg>
                 </div>
                 <div class="ml-3">
-                    <h3 class="text-sm font-medium text-[#ae3200]">Información sobre el reporte</h3>
-                    <div class="mt-2 text-sm text-[#6b6b6b]">
+                    <h3 class="text-sm font-medium text-[#1c1b1b]">Información sobre el reporte</h3>
+                    <div class="mt-2 text-sm text-gray-700">
                         <ul class="list-disc pl-5 space-y-1">
                             <li>El reporte incluirá todos los tickets que coincidan con los filtros seleccionados</li>
                             <li>Si no seleccionas fechas, se incluirán todos los tickets</li>
@@ -407,7 +398,7 @@ document.getElementById('reporteForm').addEventListener('submit', function(e) {
             icon: 'error',
             title: 'Error en las fechas',
             text: 'La fecha "desde" no puede ser mayor que la fecha "hasta"',
-            confirmButtonColor: '#667eea'
+            confirmButtonColor: '#F95F2B'
         });
         return false;
     }
@@ -434,7 +425,7 @@ document.getElementById('reporteForm').addEventListener('submit', function(e) {
                 text: 'Se generará y descargará el archivo con los filtros actuales.',
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#16a34a',
+                confirmButtonColor: '#F95F2B',
                 cancelButtonColor: '#6b7280',
                 confirmButtonText: `Sí, descargar ${tipoFormato}`,
                 cancelButtonText: 'Cancelar',

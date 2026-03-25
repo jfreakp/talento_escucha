@@ -781,30 +781,65 @@ def generar_pdf_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitu
     
     # Estilos
     styles = getSampleStyleSheet()
+
+    brand_style = ParagraphStyle(
+        'BrandLabel',
+        parent=styles['Normal'],
+        fontSize=9,
+        textColor=colors.HexColor('#F95F2B'),
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold',
+        spaceAfter=4,
+        spaceBefore=0,
+    )
+
     title_style = ParagraphStyle(
         'CustomTitle',
         parent=styles['Heading1'],
-        fontSize=16,
-        spaceAfter=30,
+        fontSize=18,
+        spaceAfter=4,
+        spaceBefore=0,
         alignment=TA_CENTER,
-        textColor=colors.darkblue
+        textColor=colors.HexColor('#1c1b1b'),
+        fontName='Helvetica-Bold',
     )
-    
+
+    divider_style = ParagraphStyle(
+        'Divider',
+        parent=styles['Normal'],
+        fontSize=6,
+        textColor=colors.HexColor('#F95F2B'),
+        spaceAfter=20,
+        alignment=TA_CENTER,
+    )
+
     subtitle_style = ParagraphStyle(
         'CustomSubtitle',
         parent=styles['Heading2'],
         fontSize=12,
         spaceAfter=20,
-        alignment=TA_LEFT
+        alignment=TA_LEFT,
+        textColor=colors.HexColor('#1c1b1b'),
+        fontName='Helvetica-Bold',
     )
-    
+
+    meta_style = ParagraphStyle(
+        'Meta',
+        parent=styles['Normal'],
+        fontSize=9,
+        textColor=colors.HexColor('#6b6b6b'),
+        spaceAfter=4,
+        fontName='Helvetica',
+    )
+
     # Contenido del PDF
     content = []
-    
-    # Título
-    title = Paragraph("REPORTE DE TICKETS", title_style)
-    content.append(title)
-    content.append(Spacer(1, 20))
+
+    # Encabezado con marca
+    content.append(Paragraph('TALENTO ESCUCHA', brand_style))
+    content.append(Paragraph('REPORTE DE TICKETS', title_style))
+    content.append(Paragraph('─' * 60, divider_style))
+    content.append(Spacer(1, 8))
     
     # Información de filtros aplicados
     filtros_info = []
@@ -827,21 +862,15 @@ def generar_pdf_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitu
     
     if filtros_info:
         filtros_text = " | ".join(filtros_info)
-        filtros_para = Paragraph(f"<b>Filtros aplicados:</b> {filtros_text}", styles['Normal'])
+        filtros_para = Paragraph(f"<b>Filtros:</b> {filtros_text}", meta_style)
         content.append(filtros_para)
-        content.append(Spacer(1, 20))
     
-    # Resumen estadístico
+    # Resumen y fecha
     total_tickets = tickets.count()
-    resumen_para = Paragraph(f"<b>Total de tickets encontrados:</b> {total_tickets}", subtitle_style)
-    content.append(resumen_para)
-    content.append(Spacer(1, 10))
-    
-    # Fecha de generación
-    fecha_generacion = timezone.now().strftime("%d/%m/%Y %H:%M:%S")
-    fecha_para = Paragraph(f"<b>Fecha de generación:</b> {fecha_generacion}", styles['Normal'])
-    content.append(fecha_para)
-    content.append(Spacer(1, 20))
+    fecha_generacion = timezone.now().strftime('%d/%m/%Y %H:%M:%S')
+    content.append(Paragraph(f"<b>Total de tickets:</b> {total_tickets}", meta_style))
+    content.append(Paragraph(f"<b>Fecha de generación:</b> {fecha_generacion}", meta_style))
+    content.append(Spacer(1, 16))
     
     if tickets.exists():
         # Crear tabla con los datos
@@ -867,17 +896,23 @@ def generar_pdf_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solicitu
         # Crear tabla
         table = Table(data, colWidths=[1*inch, 1*inch, 1*inch, 1*inch, 1.2*inch, 1.3*inch])
         table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#F95F2B')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, 0), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+            ('TOPPADDING', (0, 0), (-1, 0), 10),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#fff5f2')),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#fff5f2'), colors.white]),
             ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 1), (-1, -1), 8),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor('#1c1b1b')),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#ece9e8')),
+            ('LINEABOVE', (0, 0), (-1, 0), 1, colors.HexColor('#F95F2B')),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
+            ('TOPPADDING', (0, 1), (-1, -1), 8),
         ]))
         
         content.append(table)
@@ -898,20 +933,51 @@ def generar_excel_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solici
     ws = wb.active
     ws.title = "Reporte de Tickets"
     
-    # Definir estilos
+    # Paleta naranja
+    orange_hex = "F95F2B"
+    orange_dark_hex = "AE3200"
+    light_bg_hex = "FFF5F2"
+    border_hex = "ECE9E8"
+    dark_text_hex = "1C1B1B"
+
     header_font = Font(bold=True, color="FFFFFF")
-    header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+    header_fill = PatternFill(start_color=orange_hex, end_color=orange_hex, fill_type="solid")
     header_alignment = Alignment(horizontal="center", vertical="center")
-    
-    # Título del reporte
-    ws.merge_cells('A1:F2')
-    title_cell = ws['A1']
-    title_cell.value = "REPORTE DE TICKETS PQRS"
-    title_cell.font = Font(bold=True, size=16)
+
+    from openpyxl.styles import Border, Side
+    thin_border = Border(
+        left=Side(style='thin', color=border_hex),
+        right=Side(style='thin', color=border_hex),
+        top=Side(style='thin', color=border_hex),
+        bottom=Side(style='thin', color=border_hex),
+    )
+
+    # Fila 1: marca del sistema
+    ws.merge_cells('A1:F1')
+    brand_cell = ws['A1']
+    brand_cell.value = "TALENTO ESCUCHA"
+    brand_cell.font = Font(bold=True, size=10, color=orange_hex)
+    brand_cell.alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[1].height = 18
+
+    # Fila 2: título del reporte
+    ws.merge_cells('A2:F3')
+    title_cell = ws['A2']
+    title_cell.value = "REPORTE DE TICKETS"
+    title_cell.font = Font(bold=True, size=16, color=dark_text_hex)
     title_cell.alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[2].height = 28
+    ws.row_dimensions[3].height = 28
     
     # Información de filtros
-    row_num = 4
+    row_num = 5
+    fecha_generacion = datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+    ws.merge_cells(f'A{row_num}:F{row_num}')
+    ws[f'A{row_num}'].value = f"Fecha de generación: {fecha_generacion}"
+    ws[f'A{row_num}'].font = Font(italic=True, size=9, color="6B6B6B")
+    ws[f'A{row_num}'].alignment = Alignment(horizontal="center")
+    row_num += 1
+
     if fecha_desde or fecha_hasta or (estado and estado != 'todos') or (tipo_solicitud and tipo_solicitud != 'todos'):
         ws.merge_cells(f'A{row_num}:F{row_num}')
         filtros_text = "Filtros aplicados: "
@@ -926,11 +992,14 @@ def generar_excel_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solici
         if tipo_solicitud and tipo_solicitud != 'todos':
             tipo_display = dict(Ticket.TIPO_SOLICITUD_CHOICES).get(tipo_solicitud, tipo_solicitud)
             filtros.append(f"Tipo: {tipo_display}")
-        
+
         ws[f'A{row_num}'].value = filtros_text + " | ".join(filtros)
-        ws[f'A{row_num}'].font = Font(italic=True)
-        row_num += 2
-    
+        ws[f'A{row_num}'].font = Font(italic=True, size=9, color=orange_dark_hex)
+        ws[f'A{row_num}'].alignment = Alignment(horizontal="center")
+        row_num += 1
+
+    row_num += 1  # espacio antes de encabezados
+
     # Encabezados de columnas
     headers = ['Código', 'Tipo', 'Estado', 'Severidad', 'Fecha Creación', 'Asignado a']
     for col_num, header in enumerate(headers, 1):
@@ -939,25 +1008,33 @@ def generar_excel_reporte(tickets, fecha_desde, fecha_hasta, estado, tipo_solici
         cell.font = header_font
         cell.fill = header_fill
         cell.alignment = header_alignment
-    
-    # Datos
-    for ticket in tickets:
+        cell.border = thin_border
+    ws.row_dimensions[row_num].height = 20
+
+    # Datos con filas alternas
+    alt_fill = PatternFill(start_color=light_bg_hex, end_color=light_bg_hex, fill_type="solid")
+    data_alignment = Alignment(horizontal="center", vertical="center")
+    data_font = Font(size=10, color=dark_text_hex)
+
+    for i, ticket in enumerate(tickets):
         row_num += 1
-        
+
         # Obtener valores para mostrar
         tipo_display = dict(Ticket.TIPO_SOLICITUD_CHOICES).get(ticket.tipo_solicitud, ticket.tipo_solicitud)
         estado_display = dict(Ticket.ESTADO_CHOICES).get(ticket.estado, ticket.estado)
         severidad_display = dict(Ticket.SEVERIDAD_CHOICES).get(ticket.severidad, ticket.severidad)
         fecha_creacion = ticket.fecha_creacion.strftime('%d/%m/%Y %H:%M')
         asignado = ticket.usuario_asignado.get_full_name() if ticket.usuario_asignado else 'Sin asignar'
-        
-        # Agregar datos a las celdas
-        ws.cell(row=row_num, column=1, value=ticket.codigo)
-        ws.cell(row=row_num, column=2, value=tipo_display)
-        ws.cell(row=row_num, column=3, value=estado_display)
-        ws.cell(row=row_num, column=4, value=severidad_display)
-        ws.cell(row=row_num, column=5, value=fecha_creacion)
-        ws.cell(row=row_num, column=6, value=asignado)
+
+        row_values = [ticket.codigo, tipo_display, estado_display, severidad_display, fecha_creacion, asignado]
+        for col_num, value in enumerate(row_values, 1):
+            cell = ws.cell(row=row_num, column=col_num, value=value)
+            cell.font = data_font
+            cell.alignment = data_alignment
+            cell.border = thin_border
+            if i % 2 == 0:
+                cell.fill = alt_fill
+        ws.row_dimensions[row_num].height = 18
     
     # Ajustar ancho de columnas
     column_widths = [15, 12, 15, 12, 18, 20]

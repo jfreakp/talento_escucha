@@ -148,7 +148,7 @@
                             </div>
                             <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
                                 {% if ticket.usuario_asignado %}
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#fff5f2] text-[#F95F2B]">
                                         Asignado a {{ ticket.usuario_asignado.get_full_name|default:ticket.usuario_asignado.username }}
                                     </span>
                                 {% else %}

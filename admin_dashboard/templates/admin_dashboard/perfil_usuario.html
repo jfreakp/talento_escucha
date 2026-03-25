@@ -87,7 +87,7 @@
         {% if messages %}
             <div class="space-y-3 mb-8">
                 {% for message in messages %}
-                    <div class="rounded-xl px-4 py-3 border {% if message.tags == 'error' %}bg-red-50 border-red-200 text-red-800{% elif message.tags == 'success' %}bg-green-50 border-green-200 text-green-800{% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %}">
+                    <div class="rounded-xl px-4 py-3 border {% if message.tags == 'error' %}bg-red-50 border-red-200 text-red-800{% elif message.tags == 'success' %}bg-green-50 border-green-200 text-green-800{% else %}bg-[#fff5f2] border-[#F95F2B]/20 text-[#ae3200]{% endif %}">
                         <p class="text-sm font-semibold">{{ message }}</p>
                     </div>
                 {% endfor %}
