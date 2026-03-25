@@ -57,12 +57,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'talento_escucha.wsgi.application'
 
-APP_ENV = os.getenv('APP_ENV', 'DEV').upper()
+_database_url = os.getenv('DATABASE_URL')
 
-if APP_ENV == 'PRO':
-    _database_url = os.getenv('PRO_DATABASE_URL') or os.getenv('DATABASE_URL')
-else:
-    _database_url = os.getenv('DEV_DATABASE_URL')
 
 if _database_url:
     DATABASES = {
