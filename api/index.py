@@ -6,7 +6,3 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "talento_escucha.settings")
 
 app = get_wsgi_application()
 application = app
-
-
-
-
