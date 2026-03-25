@@ -18,7 +18,9 @@ urlpatterns = [
     path('tickets/asignados/', views.tickets_asignados, name='tickets_asignados'),
     path('tickets/mis-tickets/', views.mis_tickets, name='mis_tickets'),
     path('tickets/asignar-a-mi/<int:ticket_id>/', views.asignar_ticket_a_mi, name='asignar_ticket_a_mi'),
+    path('tickets/asignar-a-usuario/<int:ticket_id>/', views.asignar_ticket_a_usuario, name='asignar_ticket_a_usuario'),
     path('tickets/formulario-solucion/<int:ticket_id>/', views.formulario_solucion, name='formulario_solucion'),
+    path('tickets/rechazar/<int:ticket_id>/', views.rechazar_ticket, name='rechazar_ticket'),
     path('tickets/resolver/<int:ticket_id>/', views.resolver_ticket, name='resolver_ticket'),
     # URLs para reportería
     path('reportes/tickets/', views.reporte_tickets, name='reporte_tickets'),

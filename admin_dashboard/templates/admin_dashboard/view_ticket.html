@@ -1,4 +1,5 @@
 {% extends 'admin_dashboard/base.html' %}
+{% load role_tags %}
 
 {% block title %}Ticket {{ ticket.codigo }} - Talento Escucha{% endblock %}
 
@@ -151,6 +152,61 @@
                     </div>
                 </div>
 
+                {% if user|has_role:'ADMIN' and ticket.estado != 'resuelto' and ticket.estado != 'cerrado' and ticket.estado != 'cancelado' %}
+                <div class="mt-6 bg-indigo-50 border border-indigo-200 rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">
+                        <svg class="inline w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        Asignar Ticket
+                    </h3>
+                    <form method="post" action="{% url 'admin_dashboard:asignar_ticket_a_usuario' ticket.id %}">
+                        {% csrf_token %}
+                        <div class="flex flex-col sm:flex-row items-end gap-4">
+                            <div class="flex-1 w-full">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Seleccionar Revisor</label>
+                                <select name="user_id" required
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                                    <option value="">-- Selecciona un revisor --</option>
+                                    {% for revisor in revisores %}
+                                    <option value="{{ revisor.id }}"
+                                        {% if ticket.usuario_asignado_id == revisor.id %}selected{% endif %}>
+                                        {{ revisor.get_full_name|default:revisor.username }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit"
+                                    class="px-5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-medium text-sm transition-colors whitespace-nowrap">
+                                Confirmar asignación
+                            </button>
+                        </div>
+                        {% if ticket.usuario_asignado %}
+                        <p class="mt-2 text-xs text-gray-500">
+                            Actualmente asignado a: <strong>{{ ticket.usuario_asignado.get_full_name|default:ticket.usuario_asignado.username }}</strong>.
+                            Selecciona otro revisor para reasignar.
+                        </p>
+                        {% endif %}
+                    </form>
+                </div>
+                {% endif %}
+
+                {% if puede_rechazar_ticket %}
+                <div class="mt-6 bg-red-50 border border-red-200 rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Rechazar Ticket</h3>
+                    <p class="text-sm text-gray-600 mb-4">Registra el motivo del rechazo. Este motivo quedará guardado en el ticket, el historial y las notificaciones.</p>
+                    <form id="form-rechazo-ticket" method="post" action="{% url 'admin_dashboard:rechazar_ticket' ticket.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="motivo_rechazo" id="motivo-rechazo-ticket-input">
+                        <div class="flex justify-end">
+                            <button type="button" onclick="abrirModalRechazo('form-rechazo-ticket', 'motivo-rechazo-ticket-input', '{{ ticket.codigo }}')" class="px-5 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 font-medium text-sm transition-colors whitespace-nowrap">
+                                Rechazar ticket
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+
                 <!-- Descripción -->
                 <div class="mt-6">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Descripción</h3>
@@ -165,6 +221,15 @@
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Solución</h3>
                     <div class="bg-green-50 border border-green-200 rounded-lg p-4">
                         <p class="text-gray-700 whitespace-pre-wrap">{{ ticket.solucion }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if ticket.motivo_rechazo %}
+                <div class="mt-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Motivo del rechazo</h3>
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <p class="text-gray-700 whitespace-pre-wrap">{{ ticket.motivo_rechazo }}</p>
                     </div>
                 </div>
                 {% endif %}
@@ -187,12 +252,27 @@
                                             <div>
                                                 <span class="h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white
                                                     {% if auditoria.operacion == 'CREATE' %}bg-green-500
+                                                    {% elif auditoria.operacion == 'ASSIGN' %}bg-indigo-500
+                                                    {% elif auditoria.operacion == 'REJECT' %}bg-red-500
+                                                    {% elif auditoria.operacion == 'RESOLVE' %}bg-emerald-500
                                                     {% elif auditoria.operacion == 'UPDATE' %}bg-blue-500
-                                                    {% elif auditoria.operacion == 'DELETE' %}bg-red-500
+                                                    {% elif auditoria.operacion == 'DELETE' %}bg-red-700
                                                     {% endif %}">
                                                     {% if auditoria.operacion == 'CREATE' %}
                                                         <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                                        </svg>
+                                                    {% elif auditoria.operacion == 'ASSIGN' %}
+                                                        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m10 0v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2m10 0H7m10-12a4 4 0 11-8 0 4 4 0 018 0"/>
+                                                        </svg>
+                                                    {% elif auditoria.operacion == 'REJECT' %}
+                                                        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"/>
+                                                        </svg>
+                                                    {% elif auditoria.operacion == 'RESOLVE' %}
+                                                        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0"/>
                                                         </svg>
                                                     {% elif auditoria.operacion == 'UPDATE' %}
                                                         <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -276,5 +356,33 @@
     document.addEventListener('DOMContentLoaded', function() {
         switchTab('info');
     });
+
+    function abrirModalRechazo(formId, inputId, ticketCodigo) {
+        Swal.fire({
+            title: '¿Rechazar ticket?',
+            text: `Indica el motivo del rechazo para el ticket #${ticketCodigo}.`,
+            input: 'textarea',
+            inputPlaceholder: 'Escribe el motivo del rechazo',
+            inputAttributes: {
+                'aria-label': 'Motivo del rechazo'
+            },
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Sí, rechazar',
+            cancelButtonText: 'Cancelar',
+            inputValidator: (value) => {
+                if (!value || !value.trim()) {
+                    return 'Debes indicar el motivo del rechazo';
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById(inputId).value = result.value.trim();
+                document.getElementById(formId).submit();
+            }
+        });
+    }
     </script>
 {% endblock %}

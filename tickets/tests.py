@@ -4,7 +4,7 @@ from django.contrib.auth.models import Group
 from django.urls import reverse
 from django.core import mail
 from django.test.utils import override_settings
-from tickets.models import Agencia, Ticket
+from tickets.models import Agencia, Ticket, TicketAuditoria
 from tickets.forms import TicketForm
 
 
@@ -440,6 +440,129 @@ class TicketResolucionEmailTest(TestCase):
 
 
 @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+class TicketRechazoEmailTest(TestCase):
+    """Tests para validar el envío de correo al rechazar tickets."""
+
+    def setUp(self):
+        self.creador = User.objects.create_user(
+            username='creador_rechazo',
+            email='creador_rechazo@example.com',
+            password='testpass123',
+            first_name='Usuario',
+            last_name='Creador',
+        )
+        self.revisor = User.objects.create_user(
+            username='revisor_rechazo',
+            email='revisor_rechazo@example.com',
+            password='testpass123',
+            first_name='Usuario',
+            last_name='Revisor',
+        )
+        self.admin = User.objects.create_user(
+            username='admin_rechazo',
+            email='admin_rechazo@example.com',
+            password='testpass123',
+        )
+
+        self.agencia = Agencia.objects.create(
+            codigo_faces='EMAILREJ001',
+            nombre='Agencia Email Rechazo',
+            usuario_creacion=self.admin,
+            usuario_actualizacion=self.admin,
+        )
+
+    def test_envia_correo_cuando_ticket_registrado_se_rechaza(self):
+        ticket = Ticket.objects.create(
+            nombre='Mario',
+            apellido='Registrado',
+            correo='mario@example.com',
+            telefono='+3333333333',
+            agencia=self.agencia,
+            tipo_solicitud='S',
+            descripcion='Ticket registrado para validar correo de rechazo',
+            usuario_crea=self.creador,
+            usuario_asignado=self.revisor,
+            usuario_actualiza=self.revisor,
+            estado='en_proceso',
+        )
+
+        mail.outbox = []
+
+        ticket.estado = 'cancelado'
+        ticket.motivo_rechazo = 'La solicitud no cumple con los requisitos.'
+        ticket.usuario_actualiza = self.admin
+        ticket.save()
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(ticket.codigo, mail.outbox[0].subject)
+        self.assertEqual(set(mail.outbox[0].to), {self.creador.email, ticket.correo, self.revisor.email})
+        self.assertIn(ticket.motivo_rechazo, mail.outbox[0].body)
+
+
+class TicketAuditoriaAsignacionTest(TestCase):
+    """Tests para validar auditoria de asignacion y reasignacion."""
+
+    def setUp(self):
+        self.admin = User.objects.create_user(
+            username='admin_auditoria',
+            email='admin_auditoria@example.com',
+            password='testpass123',
+        )
+        self.revisor_1 = User.objects.create_user(
+            username='revisor_auditoria_1',
+            email='revisor_auditoria_1@example.com',
+            password='testpass123',
+            first_name='Revisor',
+            last_name='Uno',
+        )
+        self.revisor_2 = User.objects.create_user(
+            username='revisor_auditoria_2',
+            email='revisor_auditoria_2@example.com',
+            password='testpass123',
+            first_name='Revisor',
+            last_name='Dos',
+        )
+
+        self.agencia = Agencia.objects.create(
+            codigo_faces='AUD001',
+            nombre='Agencia Auditoria',
+            usuario_creacion=self.admin,
+            usuario_actualizacion=self.admin,
+        )
+
+    def test_reasignacion_crea_registro_en_historial(self):
+        ticket = Ticket.objects.create(
+            nombre='Caso',
+            apellido='Auditoria',
+            correo='caso@example.com',
+            telefono='+3000000001',
+            agencia=self.agencia,
+            tipo_solicitud='P',
+            descripcion='Ticket para validar historial de reasignacion',
+            usuario_asignado=self.revisor_1,
+            usuario_actualiza=self.revisor_1,
+            estado='en_proceso',
+        )
+
+        auditorias_previas = TicketAuditoria.objects.filter(ticket=ticket).count()
+
+        ticket.usuario_asignado = self.revisor_2
+        ticket.usuario_actualiza = self.admin
+        ticket._skip_assignment_email_signal = True
+        ticket.save()
+
+        self.assertEqual(TicketAuditoria.objects.filter(ticket=ticket).count(), auditorias_previas + 1)
+
+        auditoria = TicketAuditoria.objects.filter(ticket=ticket).order_by('-fecha_cambio').first()
+        self.assertEqual(auditoria.operacion, 'ASSIGN')
+        self.assertEqual(auditoria.usuario, self.admin)
+        self.assertEqual(auditoria.datos_anteriores['usuario_asignado'], self.revisor_1.username)
+        self.assertEqual(auditoria.datos_nuevos['usuario_asignado'], self.revisor_2.username)
+        self.assertIn('usuario_asignado', auditoria.campos_modificados)
+        self.assertIn('reasignado', auditoria.comentario.lower())
+
+
+@override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
 class TicketCreacionEmailTest(TestCase):
     """Tests para validar correo al crear tickets."""
 
@@ -470,7 +593,9 @@ class TicketCreacionEmailTest(TestCase):
         )
 
         revisor_group, _ = Group.objects.get_or_create(name='REVISOR')
+        admin_group, _ = Group.objects.get_or_create(name='ADMIN')
         self.revisor.groups.add(revisor_group)
+        self.admin.groups.add(admin_group)
 
     def test_creacion_envia_confirmacion_a_usuario_y_correo_solicitud(self):
         mail.outbox = []
@@ -489,9 +614,16 @@ class TicketCreacionEmailTest(TestCase):
 
         self.assertIsNotNone(ticket.codigo)
         self.assertGreaterEqual(len(mail.outbox), 2)
+        notificaciones_internas = [m for m in mail.outbox if m.subject == f'Nuevo Ticket Creado - {ticket.codigo}']
         confirmaciones = [m for m in mail.outbox if ticket.codigo in m.subject and 'Hemos recibido tu solicitud' in m.subject]
+
+        self.assertEqual(len(notificaciones_internas), 1)
         self.assertEqual(len(confirmaciones), 1)
-        self.assertEqual(confirmaciones[0].to, [self.creador.email, ticket.correo])
+        self.assertEqual(
+            set(notificaciones_internas[0].to),
+            {self.revisor.email, self.admin.email, self.creador.email},
+        )
+        self.assertEqual(set(confirmaciones[0].to), {self.creador.email, ticket.correo})
 
     def test_creacion_envia_confirmacion_a_correo_solicitud_para_anonimo(self):
         mail.outbox = []
@@ -508,7 +640,9 @@ class TicketCreacionEmailTest(TestCase):
         )
 
         self.assertIsNotNone(ticket.codigo)
-        self.assertGreaterEqual(len(mail.outbox), 2)
+        self.assertEqual(len(mail.outbox), 1)
+        notificaciones_internas = [m for m in mail.outbox if m.subject == f'Nuevo Ticket Creado - {ticket.codigo}']
         confirmaciones = [m for m in mail.outbox if ticket.codigo in m.subject and 'Hemos recibido tu solicitud' in m.subject]
-        self.assertEqual(len(confirmaciones), 1)
-        self.assertEqual(confirmaciones[0].to, [ticket.correo])
+        self.assertEqual(len(notificaciones_internas), 1)
+        self.assertEqual(len(confirmaciones), 0)
+        self.assertEqual(set(notificaciones_internas[0].to), {self.revisor.email, self.admin.email})

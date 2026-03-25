@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.db.models import Q
 from django.core.paginator import Paginator
 from tickets.models import Ticket, Agencia, TicketAuditoria, enviar_notificacion_asignacion_ticket
-from .decorators import require_role, user_can_manage_users, user_has_any_role
+from .decorators import require_role, user_can_manage_tickets, user_can_manage_users, user_has_any_role
 from .forms import UserProfileForm, CustomPasswordChangeForm
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib import colors
@@ -330,29 +330,43 @@ def buscar_ticket(request):
 def view_ticket(request, codigo):
     """Vista para mostrar el detalle del ticket con tabs"""
     ticket = get_object_or_404(Ticket, codigo=codigo)
-    
-    # Obtener el historial de auditoría del ticket
     historial = ticket.auditorias.all().order_by('-fecha_cambio')
-    
+    ticket_activo = ticket.estado not in ['resuelto', 'cerrado', 'cancelado']
+    es_admin = user_can_manage_users(request.user)
+    es_revisor_asignado = request.user.groups.filter(name='REVISOR').exists() and ticket.usuario_asignado_id == request.user.id
+
+    # Para ADMIN: lista de revisores disponibles para asignar
+    revisores = []
+    try:
+        grupo_revisor = Group.objects.get(name='REVISOR')
+        revisores = list(grupo_revisor.user_set.filter(is_active=True).order_by('first_name', 'last_name'))
+    except Group.DoesNotExist:
+        pass
+
     context = {
         'ticket': ticket,
         'historial': historial,
+        'revisores': revisores,
+        'puede_rechazar_ticket': ticket_activo and (es_admin or es_revisor_asignado),
     }
-    
+
     return render(request, 'admin_dashboard/view_ticket.html', context)
 
 
 @login_required
 def tickets_pendientes(request):
-    """Vista para mostrar tickets pendientes - solo para revisores"""
-    # Verificar que el usuario tenga el rol de REVISOR
-    if not request.user.groups.filter(name='REVISOR').exists():
+    """Vista para mostrar tickets pendientes - para revisores y admins"""
+    # Permitir revisores, admins y superusuarios
+    if not user_can_manage_tickets(request.user):
         messages.error(request, "No tienes permisos para acceder a esta sección.")
         return redirect('admin_dashboard:dashboard')
-    
-    # Obtener tickets sin asignar (sin usuario_asignado)
+
+    estados_visibles = ['pendiente', 'en_proceso']
+
+    # Obtener tickets activos sin asignar
     tickets_list = Ticket.objects.filter(
-        usuario_asignado__isnull=True
+        usuario_asignado__isnull=True,
+        estado__in=estados_visibles,
     ).order_by('-fecha_creacion')
     
     # Calcular estadísticas por estado de tickets sin asignar
@@ -383,16 +397,29 @@ def tickets_pendientes(request):
 
 @login_required
 def tickets_asignados(request):
-    """Vista para mostrar tickets asignados al revisor actual"""
-    # Verificar que el usuario tenga el rol de REVISOR
-    if not request.user.groups.filter(name='REVISOR').exists():
+    """Vista para mostrar tickets asignados al revisor actual o todos los asignados para admin"""
+    # Permitir revisores, admins y superusuarios
+    if not user_can_manage_tickets(request.user):
         messages.error(request, "No tienes permisos para acceder a esta sección.")
         return redirect('admin_dashboard:dashboard')
-    
-    # Obtener tickets asignados al usuario actual
-    tickets_list = Ticket.objects.filter(
-        usuario_asignado=request.user
-    ).order_by('-fecha_creacion')
+
+    is_admin = user_can_manage_users(request.user)
+    estados_visibles = ['pendiente', 'en_proceso']
+
+    if is_admin:
+        tickets_list = Ticket.objects.filter(
+            usuario_asignado__isnull=False,
+            estado__in=estados_visibles,
+        ).order_by('-fecha_creacion')
+        page_title = 'Tickets Asignados'
+        page_description = 'Lista de tickets actualmente asignados para seguimiento y reasignacion.'
+    else:
+        tickets_list = Ticket.objects.filter(
+            usuario_asignado=request.user,
+            estado__in=estados_visibles,
+        ).order_by('-fecha_creacion')
+        page_title = 'Mis Tickets'
+        page_description = 'Lista de tickets asignados a mi'
     
     # Calcular estadísticas por estado
     stats = {
@@ -411,10 +438,11 @@ def tickets_asignados(request):
     
     context = {
         'tickets': tickets,
-        'page_title': 'Mis Tickets',
-        'page_description': 'Lista de tickets asignados a mí',
+        'page_title': page_title,
+        'page_description': page_description,
         'total_tickets': stats['total'],
         'stats': stats,
+        'is_admin_view': is_admin,
     }
     
     return render(request, 'admin_dashboard/tickets_asignados.html', context)
@@ -444,6 +472,41 @@ def mis_tickets(request):
     }
 
     return render(request, 'admin_dashboard/mis_tickets.html', context)
+
+
+@login_required
+def asignar_ticket_a_usuario(request, ticket_id):
+    """Vista para que un ADMIN asigne un ticket a cualquier revisor"""
+    if not user_can_manage_users(request.user):
+        messages.error(request, "No tienes permisos para realizar esta acción.")
+        return redirect('admin_dashboard:dashboard')
+
+    if request.method != 'POST':
+        messages.error(request, "Método no permitido.")
+        return redirect('admin_dashboard:buscar_ticket')
+
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+    user_id = request.POST.get('user_id')
+
+    if not user_id:
+        messages.error(request, "Debes seleccionar un revisor.")
+        return redirect('admin_dashboard:view_ticket', codigo=ticket.codigo)
+
+    try:
+        usuario = User.objects.get(id=user_id, is_active=True)
+    except User.DoesNotExist:
+        messages.error(request, "El usuario seleccionado no existe.")
+        return redirect('admin_dashboard:view_ticket', codigo=ticket.codigo)
+
+    ticket._skip_assignment_email_signal = True
+    ticket.usuario_asignado = usuario
+    ticket.estado = 'en_proceso'
+    ticket.usuario_actualiza = request.user
+    ticket.save()
+
+    enviar_notificacion_asignacion_ticket(ticket)
+    messages.success(request, f"Ticket #{ticket.codigo} asignado a {usuario.get_full_name() or usuario.username} exitosamente.")
+    return redirect('admin_dashboard:view_ticket', codigo=ticket.codigo)
 
 
 @login_required
@@ -491,8 +554,8 @@ def asignar_ticket_a_mi(request, ticket_id):
 @login_required 
 def formulario_solucion(request, ticket_id):
     """Vista para mostrar el formulario de solución de un ticket"""
-    # Verificar que el usuario tenga el rol de REVISOR
-    if not request.user.groups.filter(name='REVISOR').exists():
+    # Permitir revisores, admins y superusuarios
+    if not user_can_manage_tickets(request.user):
         messages.error(request, "No tienes permisos para acceder a esta sección.")
         return redirect('admin_dashboard:dashboard')
     
@@ -519,10 +582,46 @@ def formulario_solucion(request, ticket_id):
 
 
 @login_required
+def rechazar_ticket(request, ticket_id):
+    """Permite a un admin o al revisor asignado rechazar un ticket activo."""
+    if not user_can_manage_tickets(request.user):
+        messages.error(request, "No tienes permisos para realizar esta acción.")
+        return redirect('admin_dashboard:dashboard')
+
+    if request.method != 'POST':
+        messages.error(request, "Método no permitido.")
+        return redirect('admin_dashboard:tickets_asignados')
+
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+    es_admin = user_can_manage_users(request.user)
+
+    if not es_admin and ticket.usuario_asignado_id != request.user.id:
+        messages.warning(request, f"El ticket #{ticket.codigo} no está asignado a tu usuario.")
+        return redirect('admin_dashboard:tickets_asignados')
+
+    if ticket.estado in ['resuelto', 'cerrado', 'cancelado']:
+        messages.warning(request, f"El ticket #{ticket.codigo} ya está {ticket.get_estado_display().lower()}.")
+        return redirect('admin_dashboard:view_ticket', codigo=ticket.codigo)
+
+    motivo_rechazo = request.POST.get('motivo_rechazo', '').strip()
+    if not motivo_rechazo:
+        messages.error(request, "Debes indicar el motivo del rechazo.")
+        return redirect('admin_dashboard:view_ticket', codigo=ticket.codigo)
+
+    ticket.estado = 'cancelado'
+    ticket.motivo_rechazo = motivo_rechazo
+    ticket.usuario_actualiza = request.user
+    ticket.save()
+
+    messages.success(request, f"Has rechazado el ticket #{ticket.codigo} exitosamente.")
+    return redirect('admin_dashboard:tickets_asignados')
+
+
+@login_required
 def resolver_ticket(request, ticket_id):
-    """Vista para que un revisor agregue la solución a un ticket asignado"""
-    # Verificar que el usuario tenga el rol de REVISOR
-    if not request.user.groups.filter(name='REVISOR').exists():
+    """Vista para que un revisor o admin agregue la solución a un ticket asignado"""
+    # Permitir revisores, admins y superusuarios
+    if not user_can_manage_tickets(request.user):
         messages.error(request, "No tienes permisos para realizar esta acción.")
         return redirect('admin_dashboard:dashboard')
     

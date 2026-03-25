@@ -232,6 +232,13 @@ class Ticket(models.Model):
         blank=True,
         null=True
     )
+
+    motivo_rechazo = models.TextField(
+        verbose_name="Motivo de Rechazo",
+        help_text="Razón registrada cuando el ticket es rechazado o cancelado",
+        blank=True,
+        null=True
+    )
     
     class Meta:
         verbose_name = "Ticket"
@@ -281,6 +288,7 @@ class TicketAuditoria(models.Model):
     OPERACION_CHOICES = [
         ('CREATE', 'Creación'),
         ('ASSIGN', 'Asignación'),
+        ('REJECT', 'Rechazo'),
         ('RESOLVE', 'Resolución'),
         ('UPDATE', 'Actualización'),
         ('DELETE', 'Eliminación'),
@@ -406,7 +414,8 @@ def guardar_estado_anterior(sender, instance, **kwargs):
             _ticket_estados_anteriores[instance.pk] = {
                 'usuario_asignado': ticket_anterior.usuario_asignado,
                 'estado': ticket_anterior.estado,
-                'solucion': ticket_anterior.solucion
+                'solucion': ticket_anterior.solucion,
+                'motivo_rechazo': ticket_anterior.motivo_rechazo,
             }
         except Ticket.DoesNotExist:
             pass
@@ -445,36 +454,93 @@ def auditoria_automatica_ticket(sender, instance, created, **kwargs):
         # Para tickets existentes, verificar cambios usando el estado anterior guardado
         estado_anterior = _ticket_estados_anteriores.get(instance.pk)
         if estado_anterior:
-            
-            # 2. ASIGNACIÓN: Cuando se asigna un ticket (cambió usuario_asignado de None a algún usuario)
-            if (estado_anterior['usuario_asignado'] is None and 
-                instance.usuario_asignado is not None):
-                
+
+            usuario_asignado_anterior = estado_anterior['usuario_asignado']
+            usuario_asignado_actual = instance.usuario_asignado
+
+            # 2. ASIGNACIÓN / REASIGNACIÓN: cuando cambia el responsable del ticket
+            if (
+                usuario_asignado_actual is not None and
+                (
+                    usuario_asignado_anterior is None or
+                    usuario_asignado_anterior.pk != usuario_asignado_actual.pk
+                )
+            ):
+
                 datos_anteriores = {
-                    'usuario_asignado': None,
+                    'usuario_asignado': (
+                        usuario_asignado_anterior.username if usuario_asignado_anterior else None
+                    ),
                     'estado': estado_anterior['estado']
                 }
-                
+
                 datos_nuevos = {
-                    'usuario_asignado': instance.usuario_asignado.username,
+                    'usuario_asignado': usuario_asignado_actual.username,
                     'estado': instance.estado
                 }
-                
+
+                campos_modificados = ['usuario_asignado']
+                if estado_anterior['estado'] != instance.estado:
+                    campos_modificados.append('estado')
+
+                if usuario_asignado_anterior is None:
+                    comentario = (
+                        f'Ticket asignado a '
+                        f'{usuario_asignado_actual.get_full_name() or usuario_asignado_actual.username}'
+                    )
+                else:
+                    comentario = (
+                        f'Ticket reasignado de '
+                        f'{usuario_asignado_anterior.get_full_name() or usuario_asignado_anterior.username} '
+                        f'a {usuario_asignado_actual.get_full_name() or usuario_asignado_actual.username}'
+                    )
+
                 TicketAuditoria.crear_auditoria(
                     ticket=instance,
                     operacion='ASSIGN',
                     datos_anteriores=datos_anteriores,
                     datos_nuevos=datos_nuevos,
-                    campos_modificados=['usuario_asignado', 'estado'],
+                    campos_modificados=campos_modificados,
                     usuario=instance.usuario_actualiza,
-                    comentario=f'Ticket asignado a {instance.usuario_asignado.get_full_name() or instance.usuario_asignado.username}'
+                    comentario=comentario
                 )
-                
+
                 # Enviar notificación al usuario que creó el ticket (excepto si ya se maneja explícitamente en la vista)
                 if not getattr(instance, '_skip_assignment_email_signal', False):
                     enviar_notificacion_asignacion_ticket(instance)
             
-            # 3. RESOLUCIÓN: Cuando se resuelve un ticket (estado cambió a "resuelto")
+            # 3. RECHAZO: Cuando se marca el ticket como cancelado/rechazado
+            elif (estado_anterior['estado'] != 'cancelado' and
+                  instance.estado == 'cancelado'):
+
+                datos_anteriores = {
+                    'estado': estado_anterior['estado'],
+                    'motivo_rechazo': estado_anterior['motivo_rechazo'] or "",
+                }
+
+                datos_nuevos = {
+                    'estado': instance.estado,
+                    'motivo_rechazo': instance.motivo_rechazo or "",
+                }
+
+                TicketAuditoria.crear_auditoria(
+                    ticket=instance,
+                    operacion='REJECT',
+                    datos_anteriores=datos_anteriores,
+                    datos_nuevos=datos_nuevos,
+                    campos_modificados=['estado', 'motivo_rechazo'],
+                    usuario=instance.usuario_actualiza,
+                    comentario=(
+                        f"Ticket rechazado por "
+                        f"{instance.usuario_actualiza.get_full_name() or instance.usuario_actualiza.username if instance.usuario_actualiza else 'Sistema'}"
+                        f". Motivo: {instance.motivo_rechazo or 'No especificado'}"
+                    )
+                )
+
+                if not getattr(instance, '_skip_rejection_email_signal', False):
+                    enviar_notificacion_rechazo_ticket(instance)
+
+            # 4. RESOLUCIÓN: Cuando se resuelve un ticket (estado cambió a "resuelto")
             elif (estado_anterior['estado'] != 'resuelto' and 
                   instance.estado == 'resuelto'):
                 
@@ -510,20 +576,18 @@ def auditoria_automatica_ticket(sender, instance, created, **kwargs):
 
 def enviar_notificacion_nuevo_ticket(ticket):
     """
-    Envía notificación por correo a todos los usuarios con rol REVISOR
+    Envía notificación por correo a todos los usuarios con rol REVISOR y ADMIN
     cuando se crea un nuevo ticket.
     """
     try:
-        # Obtener todos los usuarios con rol REVISOR
-        grupo_revisor = Group.objects.filter(name='REVISOR').first()
-        if not grupo_revisor:
-            logger.warning("No se encontró el grupo REVISOR")
-            return
-        
-        usuarios_revisor = grupo_revisor.user_set.filter(is_active=True, email__isnull=False).exclude(email='')
-        
-        if not usuarios_revisor.exists():
-            logger.warning("No hay usuarios REVISOR activos con email configurado")
+        usuarios_internos = User.objects.filter(
+            groups__name__in=['REVISOR', 'ADMIN'],
+            is_active=True,
+            email__isnull=False,
+        ).exclude(email='').distinct()
+
+        if not usuarios_internos.exists():
+            logger.warning("No hay usuarios REVISOR o ADMIN activos con email configurado")
             return
         
         # Preparar el contenido del correo
@@ -532,7 +596,7 @@ def enviar_notificacion_nuevo_ticket(ticket):
         tipo_solicitud_display = dict(ticket.TIPO_SOLICITUD_CHOICES).get(ticket.tipo_solicitud, ticket.tipo_solicitud)
         
         mensaje = f"""
-Estimado/a Revisor/a,
+Estimado/a equipo de gestión,
 
 Se ha creado un nuevo ticket en el sistema PQRS - Talento Escucha.
 
@@ -562,19 +626,24 @@ Saludos cordiales,
 Sistema PQRS - Talento Escucha
         """.strip()
         
-        # Obtener emails de los revisores
-        emails_revisor = list(usuarios_revisor.values_list('email', flat=True))
+        # Obtener emails de revisores y administradores
+        emails_internos = list(usuarios_internos.values_list('email', flat=True))
+
+        if ticket.usuario_crea and ticket.usuario_crea.email:
+            emails_internos.append(ticket.usuario_crea.email)
+
+        recipient_list = list(dict.fromkeys(emails_internos))
         
         # Enviar correo
         send_mail(
             subject=asunto,
             message=mensaje,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=emails_revisor,
+            recipient_list=recipient_list,
             fail_silently=False,
         )
-        
-        logger.info(f"Notificación enviada a {len(emails_revisor)} revisores para el ticket {ticket.codigo}")
+
+        logger.info(f"Notificación enviada a {len(recipient_list)} destinatarios internos para el ticket {ticket.codigo}")
         
     except Exception as e:
         logger.error(f"Error al enviar notificación para ticket {ticket.codigo}: {str(e)}")
@@ -587,6 +656,10 @@ def enviar_confirmacion_creacion_ticket(ticket):
     Se notifica al correo de la cuenta (si existe) y al correo ingresado en la solicitud.
     """
     try:
+        if not ticket.usuario_crea:
+            logger.info(f"Ticket {ticket.codigo} anónimo: no se envía confirmación al solicitante")
+            return
+
         recipient_list = []
         if ticket.usuario_crea and ticket.usuario_crea.email:
             recipient_list.append(ticket.usuario_crea.email)
@@ -782,6 +855,71 @@ Equipo PQRS - Talento Escucha
         
     except Exception as e:
         logger.error(f"Error al enviar notificación de solución para ticket {ticket.codigo}: {str(e)}")
+
+
+def enviar_notificacion_rechazo_ticket(ticket):
+    """
+    Envía notificación por correo a las personas involucradas cuando un ticket es rechazado.
+    """
+    try:
+        recipient_list = []
+        if ticket.usuario_crea and ticket.usuario_crea.email:
+            recipient_list.append(ticket.usuario_crea.email)
+        if ticket.correo:
+            recipient_list.append(ticket.correo)
+        if ticket.usuario_asignado and ticket.usuario_asignado.email:
+            recipient_list.append(ticket.usuario_asignado.email)
+
+        recipient_list = list(dict.fromkeys(recipient_list))
+        destinatario_nombre = ticket.nombre_completo
+
+        if not recipient_list:
+            logger.warning(f"Ticket {ticket.codigo} no tiene correos para notificación de rechazo")
+            return
+
+        asunto = f"Tu solicitud {ticket.codigo} ha sido rechazada"
+        tipo_solicitud_display = dict(ticket.TIPO_SOLICITUD_CHOICES).get(ticket.tipo_solicitud, ticket.tipo_solicitud)
+        motivo_rechazo = ticket.motivo_rechazo or 'No se proporcionó un motivo adicional.'
+
+        mensaje = f"""
+Estimado/a {destinatario_nombre},
+
+Tu solicitud ha sido rechazada en el sistema PQRS - Talento Escucha.
+
+DETALLES DE TU SOLICITUD:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+• Código: {ticket.codigo}
+• Tipo: {tipo_solicitud_display}
+• Estado: {dict(ticket.ESTADO_CHOICES).get(ticket.estado, ticket.estado)}
+• Fecha de actualización: {ticket.fecha_actualizacion.strftime('%d/%m/%Y %H:%M')}
+
+MOTIVO DEL RECHAZO:
+{motivo_rechazo}
+
+DESCRIPCIÓN ORIGINAL:
+{ticket.descripcion}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Si necesitas más información, puedes comunicarte con nuestro equipo indicando el código del ticket.
+
+Saludos cordiales,
+Equipo PQRS - Talento Escucha
+        """.strip()
+
+        send_mail(
+            subject=asunto,
+            message=mensaje,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=recipient_list,
+            fail_silently=False,
+        )
+
+        logger.info(f"Notificación de rechazo enviada a {', '.join(recipient_list)} para el ticket {ticket.codigo}")
+
+    except Exception as e:
+        logger.error(f"Error al enviar notificación de rechazo para ticket {ticket.codigo}: {str(e)}")
             
     except Exception as e:
         # En caso de error, no afectar el guardado del ticket

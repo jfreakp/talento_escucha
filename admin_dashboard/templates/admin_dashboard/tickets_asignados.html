@@ -1,4 +1,5 @@
 {% extends 'admin_dashboard/base.html' %}
+{% load role_tags %}
 
 {% block title %}{{ page_title }} - Talento Escucha{% endblock %}
 
@@ -86,8 +87,16 @@
 <!-- Lista de tickets -->
 <div class="bg-white shadow overflow-hidden sm:rounded-md">
     <div class="px-4 py-5 sm:px-6">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">Mis Tickets Asignados</h3>
-        <p class="mt-1 max-w-2xl text-sm text-gray-500">Tickets que han sido asignados a tu usuario para revisión.</p>
+        <h3 class="text-lg leading-6 font-medium text-gray-900">
+            {% if is_admin_view %}Tickets Asignados{% else %}Mis Tickets Asignados{% endif %}
+        </h3>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500">
+            {% if is_admin_view %}
+                Tickets actualmente asignados a revisores. Puedes abrir cada ticket para reasignarlo.
+            {% else %}
+                Tickets que han sido asignados a tu usuario para revisión.
+            {% endif %}
+        </p>
     </div>
     
     {% if tickets %}
@@ -146,23 +155,41 @@
                                     </svg>
                                     {{ ticket.correo }}
                                 </p>
+                                {% if is_admin_view and ticket.usuario_asignado %}
+                                <p class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
+                                    <svg class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m10 0v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2m10 0H7m10-12a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                    Asignado a: {{ ticket.usuario_asignado.get_full_name|default:ticket.usuario_asignado.username }}
+                                </p>
+                                {% endif %}
                             </div>
-                            <div class="mt-2 flex items-center justify-between text-sm text-gray-500 sm:mt-0">
+                            <div class="mt-2 flex items-center justify-between text-sm text-gray-500 sm:mt-0 gap-3">
                                 <p class="flex items-center">
                                     <svg class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     Creado el {{ ticket.fecha_creacion|date:"d/m/Y" }}
                                 </p>
-                                {% if ticket.estado == 'en_proceso' %}
-                                <a href="{% url 'admin_dashboard:formulario_solucion' ticket.id %}"
-                                   class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out"
-                                   onclick="event.stopPropagation()">
-                                    <svg class="-ml-0.5 mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    Resolver
-                                </a>
+                                <div class="flex items-center gap-2">
+                                {% if is_admin_view %}
+                                    <a href="{% url 'admin_dashboard:view_ticket' codigo=ticket.codigo %}"
+                                       class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
+                                       onclick="event.stopPropagation()">
+                                        <svg class="-ml-0.5 mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m10 0v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v2m10 0H7" />
+                                        </svg>
+                                        Reasignar
+                                    </a>
+                                {% elif ticket.estado == 'en_proceso' %}
+                                    <a href="{% url 'admin_dashboard:formulario_solucion' ticket.id %}"
+                                       class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out"
+                                       onclick="event.stopPropagation()">
+                                        <svg class="-ml-0.5 mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Resolver
+                                    </a>
                                 {% elif ticket.estado == 'resuelto' %}
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                     <svg class="-ml-0.5 mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
@@ -171,6 +198,19 @@
                                     Resuelto
                                 </span>
                                 {% endif %}
+                                    <form method="post" action="{% url 'admin_dashboard:rechazar_ticket' ticket.id %}" id="form-rechazo-{{ ticket.id }}" onsubmit="event.stopPropagation(); return false;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="motivo_rechazo" id="motivo-rechazo-{{ ticket.id }}">
+                                        <button type="submit"
+                                                class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out"
+                                                onclick="event.stopPropagation(); abrirModalRechazoLista('form-rechazo-{{ ticket.id }}', 'motivo-rechazo-{{ ticket.id }}', '{{ ticket.codigo }}')">
+                                            <svg class="-ml-0.5 mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12" />
+                                            </svg>
+                                            Rechazar
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -183,8 +223,16 @@
             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">No tienes tickets asignados</h3>
-            <p class="mt-1 text-sm text-gray-500">Cuando se te asignen tickets, aparecerán aquí.</p>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">
+                {% if is_admin_view %}No hay tickets asignados{% else %}No tienes tickets asignados{% endif %}
+            </h3>
+            <p class="mt-1 text-sm text-gray-500">
+                {% if is_admin_view %}
+                    Cuando se asignen tickets a revisores, aparecerán aquí para seguimiento y reasignacion.
+                {% else %}
+                    Cuando se te asignen tickets, aparecerán aquí.
+                {% endif %}
+            </p>
         </div>
     {% endif %}
 </div>
@@ -255,4 +303,30 @@
 
 
 
+<script>
+function abrirModalRechazoLista(formId, inputId, ticketCodigo) {
+    Swal.fire({
+        title: '¿Rechazar ticket?',
+        text: `Indica el motivo del rechazo para el ticket #${ticketCodigo}.`,
+        input: 'textarea',
+        inputPlaceholder: 'Escribe el motivo del rechazo',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, rechazar',
+        cancelButtonText: 'Cancelar',
+        inputValidator: (value) => {
+            if (!value || !value.trim()) {
+                return 'Debes indicar el motivo del rechazo';
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById(inputId).value = result.value.trim();
+            document.getElementById(formId).submit();
+        }
+    });
+}
+</script>
 {% endblock %}
